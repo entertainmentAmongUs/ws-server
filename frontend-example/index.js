@@ -4,7 +4,7 @@ const chatWindowEl = document.getElementById('chat-window');
 
 const chat = `<div></div>`;
 
-const socket = io('ws://localhost:8080');
+const socket = io('ws://localhost:8080', { transports: ['websocket'] });
 
 socket.on('connect', () => {
   console.log(`${socket.id} 님으로 연결되었습니다.`);
