@@ -33,7 +33,10 @@ async function bootstrap() {
 
   const asyncApiOptions = new AsyncApiDocumentBuilder()
     .setTitle('Entertainment AmongUs Websocket API')
-    .setDescription('socket.io 관련 api는 아래를 참조하세요.')
+    .setDescription(
+      `socket.io 관련 api는 아래를 참조하세요.\n\n
+      Sub은 Subscriber(클라이언트에게 메시지를 받는 포맷), Pub은 Publisher입니다(클라이언트에게 메시지를 보내는 포맷).`
+    )
     .setVersion('1.0')
     .setDefaultContentType('application/json')
     .addSecurity('user-password', { type: 'userPassword' })
