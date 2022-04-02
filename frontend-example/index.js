@@ -11,10 +11,10 @@ socket.on('connect', () => {
 });
 
 chatEnterButtonEl.addEventListener('click', () => {
-  socket.emit('chat message', chatInputEl.value);
+  socket.emit('test', chatInputEl.value);
 });
 
-socket.on('chat message', (arg) => {
+socket.on('test', (arg) => {
   console.log(arg);
   createChat(arg.id, arg.message);
 });

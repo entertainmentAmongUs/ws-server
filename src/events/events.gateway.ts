@@ -1,18 +1,67 @@
+import { Logger } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
+import { Namespace, Server } from 'socket.io';
+import { Socket } from 'socket.io-client';
 
-@WebSocketGateway(8080, { cors: { origin: '*' } })
-export class EventsGateway {
+class TestEventsDto {
+  @ApiProperty()
+  readonly name: string;
+}
+
+@AsyncApiService()
+@WebSocketGateway({ cors: { origin: '*' } })
+export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+  private logger: Logger = new Logger(EventsGateway.name);
 
-  @SubscribeMessage('chat message')
-  onEvent(client: any, message: any) {
-    console.log('이벤트를 받았다!');
-    this.server.emit('chat message', { id: client.id, message });
+  afterInit(nsp: Namespace) {
+    this.logger.log(`WS server init: ${nsp?.name}`);
+  }
+
+  handleDisconnect(client: Socket) {
+    this.logger.log(`IOClient disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('test')
+  @AsyncApiPub({
+    channel: 'test',
+    summary: '패킷 전송을 테스트합니다.',
+    description: '이 메소드는 테스트를 위해 사용됩니다.',
+    message: {
+      name: 'test data',
+      payload: {
+        type: TestEventsDto,
+      },
+    },
+  })
+  test(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
+    this.logger.log(`data from client ${client.id} : ${JSON.stringify(data)}`);
+    this.server.emit('test', { id: client.id, message: data });
+  }
+
+  @AsyncApiSub({
+    channel: 'signal',
+    summary: 'signal packet을 읽습니다.',
+    description: '이 메소드는 테스트를 위해 사용됩니다.',
+    message: {
+      name: 'test data signal',
+      payload: {
+        type: TestEventsDto,
+      },
+    },
+  })
+  async emitSignal(boardUUID: string, data: Record<string, any>) {
+    this.server.to('test').emit('signal', data);
   }
 }
