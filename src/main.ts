@@ -18,15 +18,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const asyncApiServer: AsyncServerObject = {
-    url: 'ws://localhost:8080',
+    url: 'ws://localhost',
     protocol: 'socket.io',
     protocolVersion: '4',
     description: 'websocket 프로토콜을 이용해 해당 서버에 접속할 수 있습니다.',
-    security: [{ 'user-password': [] }],
     variables: {
       port: {
-        description: '현재 TLS 연결은 불가능 합니다.',
-        default: '443',
+        description: '웹소켓 연결을 위해 포트는 8080으로 설정해주세요.',
+        default: '8080',
       },
     },
     bindings: {},
@@ -38,7 +37,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .setDefaultContentType('application/json')
     .addSecurity('user-password', { type: 'userPassword' })
-    .addServer('cats-server', asyncApiServer)
+    .addServer('ws-server', asyncApiServer)
     .build();
 
   const asyncapiDocument = await AsyncApiModule.createDocument(

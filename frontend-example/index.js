@@ -1,6 +1,7 @@
 const chatEnterButtonEl = document.getElementById('chat-enter-button');
 const chatInputEl = document.getElementById('chat-input');
 const chatWindowEl = document.getElementById('chat-window');
+const chatTestButtonEl = document.getElementById('chat-test-button');
 
 const chat = `<div></div>`;
 
@@ -11,6 +12,10 @@ socket.on('connect', () => {
 });
 
 chatEnterButtonEl.addEventListener('click', () => {
+  socket.emit('test', chatInputEl.value);
+});
+
+chatTestButtonEl.addEventListener('click', () => {
   socket.emit('test', chatInputEl.value);
 });
 
