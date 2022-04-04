@@ -19,7 +19,7 @@ class TestEventsDto {
 }
 
 @AsyncApiService()
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, allowEIO3: true })
 export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
