@@ -60,6 +60,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       (room) => this.rooms[room] === socket.id
     );
 
+    this.logger.log(roomId);
+
     this.server.to(roomId).emit('chat message', { message: data });
   }
 
