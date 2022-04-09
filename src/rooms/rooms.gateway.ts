@@ -16,7 +16,11 @@ import { Socket } from 'socket.io-client';
 //   readonly message: string;
 // }
 
-@WebSocketGateway({ cors: { origin: '*' }, Namespace: 'room', allowEIO3: true })
+@WebSocketGateway({
+  cors: { origin: '*' },
+  Namespace: '/room',
+  allowEIO3: true,
+})
 export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
