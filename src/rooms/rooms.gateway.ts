@@ -18,6 +18,7 @@ import { Socket } from 'socket.io-client';
 
 @WebSocketGateway({
   cors: { origin: '*' },
+  namespace: 'room',
   allowEIO3: true,
 })
 export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
@@ -42,9 +43,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
     this.logger.log(`유저가 데이터를 보냈습니다. : ${data}`);
     if (this.rooms[data]) {
-      this.rooms[data].push(socket);
+      this.rooms[data] = [socket.id];
     } else {
-      this.rooms[data] = socket.id;
+      this.rooms[data] = [...this.rooms[data], socket.id];
     }
     this.logger.log(this.rooms);
     this.server.socketsJoin(data);
@@ -52,13 +53,14 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     return { event: 'roomCreated', room: data };
   }
 
-  @SubscribeMessage('send')
+  @SubscribeMessage('chat message')
   sendMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
+    this.logger.log(data);
     const roomId = Object.keys(this.rooms).find(
       (room) => this.rooms[room] === socket.id
     );
 
-    this.server.to(roomId).emit('message', { message: data });
+    this.server.to(roomId).emit('chat message', { message: data });
   }
 
   @SubscribeMessage('leave')
