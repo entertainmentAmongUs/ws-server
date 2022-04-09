@@ -56,8 +56,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('chat message')
   sendMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
     this.logger.log(data);
-    const roomId = Object.keys(this.rooms).find(
-      (room) => this.rooms[room] === socket.id
+    const roomId = Object.keys(this.rooms).filter((key) =>
+      this.rooms[key].includes(socket.id)
     );
 
     this.logger.log(roomId);
