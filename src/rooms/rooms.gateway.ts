@@ -42,7 +42,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('join')
   joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
     this.logger.log(`유저가 데이터를 보냈습니다. : ${data}`);
-    if (this.rooms[data]) {
+    if (!this.rooms[data]) {
       this.rooms[data] = [socket.id];
     } else {
       this.rooms[data] = [...this.rooms[data], socket.id];
