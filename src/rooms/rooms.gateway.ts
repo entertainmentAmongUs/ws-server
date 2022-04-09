@@ -18,7 +18,6 @@ import { Socket } from 'socket.io-client';
 
 @WebSocketGateway({
   cors: { origin: '*' },
-  Namespace: 'room',
   allowEIO3: true,
 })
 export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
