@@ -8,4 +8,16 @@ export class RoomsService {
   }
 
   create() {}
+
+  join() {}
+
+  findById() {}
+
+  addMessage() {}
+
+  findAll() {}
+
+  update() {}
+
+  delete() {}
 }
