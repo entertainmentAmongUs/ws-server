@@ -27,7 +27,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   private logger: Logger = new Logger(RoomsGateway.name);
 
   afterInit(nsp: Namespace) {
-    this.logger.log(`WS 서버가 초기화되었습니다: ${nsp?.name}`);
+    this.logger.log(`RoomsGateway가 초기화되었습니다: ${nsp?.name}`);
   }
 
   handleConnection(client: Socket) {
@@ -73,9 +73,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         (room) => room.id !== socket.id
       );
 
-      this.server.socketsLeave(data);
+      return this.server.socketsLeave(data);
     }
 
-    this.logger.log('해당 유저가 떠날 방은 존재하지 않습니다.');
+    throw new Error('해당 유저가 떠날 방은 존재하지 않습니다.');
   }
 }
