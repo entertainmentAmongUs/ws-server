@@ -8,13 +8,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Namespace, Server } from 'socket.io';
-import { Socket } from 'socket.io-client';
-
-// class RoomEventsDto {
-//   @ApiProperty()
-//   readonly message: string;
-// }
+import { Namespace, Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -30,10 +24,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.logger.log(`RoomsGateway가 초기화되었습니다: ${nsp?.name}`);
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client) {
     this.logger.log(`유저가 접속했습니다: ${client.id}`);
   }
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
   }
 

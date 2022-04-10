@@ -1,7 +1,9 @@
-import { User } from 'src/users/user.interface';
+import { Document } from 'mongoose';
+import { User } from 'src/users/interfaces/user.interface';
 
-export interface Message {
+export interface Message extends Document {
   message: String;
   user: User;
-  date: Date;
+  created_at: Date;
+  updated_at: Date;
 }

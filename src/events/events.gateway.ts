@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { Namespace, Server } from 'socket.io';
-import { Socket } from 'socket.io-client';
+
 class TestEventsDto {
   @ApiProperty()
   readonly message: string;
@@ -28,11 +28,11 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.logger.log(`WS 서버가 초기화되었습니다: ${nsp?.name}`);
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client) {
     this.logger.log(`유저가 접속했습니다: ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
   }
 
@@ -59,7 +59,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayDisconnect {
       },
     },
   })
-  test(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
+  test(@ConnectedSocket() client, @MessageBody() data: string) {
     this.logger.log(`유저 아이디 ${client.id} : ${JSON.stringify(data)}`);
     this.server.emit('test', { message: data });
   }
