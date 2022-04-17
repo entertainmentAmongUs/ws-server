@@ -66,6 +66,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     data: { nickName: string; message: string }
   ) {
+    this.logger.log('채팅 메시지를 보냈습니다.');
+    this.logger.log(data);
     this.server.to(로비.id).emit('newLobbyChatMessage', data);
   }
 
