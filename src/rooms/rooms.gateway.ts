@@ -46,6 +46,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     this.logger.log(`유저가 채널에 접속하였습니다.`);
     this.roomsService.createLobby();
+    this.server.socketsJoin(로비.id);
     this.roomsService.join(로비.id, {
       id: socket.id,
       userId: data.userId,
