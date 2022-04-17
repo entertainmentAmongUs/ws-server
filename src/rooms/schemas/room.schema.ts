@@ -3,7 +3,7 @@ import { UserSchema } from 'src/users/schemas/user.schema';
 import { MessageSchema } from './message.schema';
 
 const room = new Schema({
-  name: { type: String, required: true },
+  name: { type: String },
   users: [UserSchema],
   messages: [MessageSchema],
   created_at: { type: Date, default: Date.now },

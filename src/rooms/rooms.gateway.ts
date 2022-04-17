@@ -9,6 +9,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Server, Socket } from 'socket.io';
+import { Room } from './interfaces/room.interface';
+import { RoomsService } from './rooms.service';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -19,6 +21,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
   private logger: Logger = new Logger(RoomsGateway.name);
+
+  constructor(private roomService: RoomsService) {}
 
   afterInit(nsp: Namespace) {
     this.logger.log(`RoomsGateway가 초기화되었습니다: ${nsp?.name}`);
@@ -32,6 +36,16 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   rooms = {};
+
+  @SubscribeMessage('create room')
+  async createRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: string
+  ) {
+    this.logger.log(`${data}방을 만듭니다.`);
+    const room = {} as Room;
+    await this.roomService.create(room);
+  }
 
   @SubscribeMessage('join')
   joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {

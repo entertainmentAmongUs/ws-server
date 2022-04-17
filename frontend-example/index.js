@@ -5,7 +5,7 @@ const chatTestButtonEl = document.getElementById('chat-test-button');
 
 const chat = `<div></div>`;
 
-const socket = io('ws://localhost:8080', { transports: ['websocket'] });
+const socket = io('ws://localhost:8080/room', { transports: ['websocket'] });
 
 socket.on('connect', () => {
   console.log(`${socket.id} 님으로 연결되었습니다.`);
@@ -16,7 +16,9 @@ chatEnterButtonEl.addEventListener('click', () => {
 });
 
 chatTestButtonEl.addEventListener('click', () => {
-  socket.emit('test', chatInputEl.value);
+  // socket.emit('test', chatInputEl.value);
+
+  socket.emit('create room', 1);
 });
 
 socket.on('test', (arg) => {
