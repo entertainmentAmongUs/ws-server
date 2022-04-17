@@ -1,5 +1,5 @@
 export interface User {
-  readonly name: String;
-  created_at: Date;
-  updated_at: Date;
+  readonly id: String;
+  readonly userId: String;
+  readonly nickName: String;
 }

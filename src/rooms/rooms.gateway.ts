@@ -8,13 +8,15 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
+import { User } from 'src/users/interfaces/user.interface';
 import { Room } from './interfaces/room.interface';
-import { RoomsService } from './rooms.service';
+import { RoomsService, 로비 } from './rooms.service';
 
+@AsyncApiService()
 @WebSocketGateway({
   cors: { origin: '*' },
-  namespace: 'room',
   allowEIO3: true,
 })
 export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
@@ -22,7 +24,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   server: Server;
   private logger: Logger = new Logger(RoomsGateway.name);
 
-  constructor(private roomService: RoomsService) {}
+  constructor(private readonly roomsService: RoomsService) {}
 
   afterInit(nsp: Namespace) {
     this.logger.log(`RoomsGateway가 초기화되었습니다: ${nsp?.name}`);
@@ -33,57 +35,46 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
   handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
+    // TODO: 유저가 접속한 모든 방에서 로그아웃
+    this.roomsService.leaveBySocketId(client.id);
   }
 
-  rooms = {};
-
-  @SubscribeMessage('create room')
-  async createRoom(
+  @SubscribeMessage('login')
+  login(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: string
+    @MessageBody() data: Omit<User, 'id'>
   ) {
-    this.logger.log(`${data}방을 만듭니다.`);
-    const room = {} as Room;
-    await this.roomService.create(room);
+    this.logger.log(`유저가 채널에 접속하였습니다.`);
+    this.roomsService.createLobby();
+    this.roomsService.join(로비.id, {
+      id: socket.id,
+      userId: data.userId,
+      nickName: data.nickName,
+    });
+
+    const currentUserInLobby = this.roomsService.findById(로비.id).users;
+    this.server.to(로비.id).emit('connectedUserList', currentUserInLobby);
+
+    const roomList = this.roomsService.findAll();
+    this.server.to(로비.id).emit('roomList', roomList);
   }
 
-  @SubscribeMessage('join')
-  joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
-    this.logger.log(`유저가 데이터를 보냈습니다. : ${data}`);
-    if (!this.rooms[data]) {
-      this.rooms[data] = [socket.id];
-    } else {
-      this.rooms[data] = [...this.rooms[data], socket.id];
-    }
-    this.logger.log(this.rooms);
-    this.server.socketsJoin(data);
-    this.server.to(data).emit('roomCreated', { room: data });
-    return { event: 'roomCreated', room: data };
+  @SubscribeMessage('lobbyChatMessage')
+  lobbyChat(
+    @ConnectedSocket() socket: Socket,
+    data: { nickName: string; message: string }
+  ) {
+    this.server.to(로비.id).emit('newLobbyChatMessage', data);
   }
 
-  @SubscribeMessage('chat message')
-  sendMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
-    this.logger.log(data);
-    const roomId = Object.keys(this.rooms).filter((key) =>
-      this.rooms[key].includes(socket.id)
-    );
+  @SubscribeMessage('createRoom')
+  createRoom(@ConnectedSocket() socket: Socket, data: Room) {
+    this.roomsService.create(data);
+    this.server.to(로비.id).emit('newRoom', data.id);
 
-    this.logger.log(roomId);
-
-    this.server.to(roomId).emit('chat message', { message: data });
-  }
-
-  @SubscribeMessage('leave')
-  leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: string) {
-    this.logger.log(data);
-    if (this.rooms[data]) {
-      this.rooms[data] = this.rooms[data].filter(
-        (room) => room.id !== socket.id
-      );
-
-      return this.server.socketsLeave(data);
-    }
-
-    throw new Error('해당 유저가 떠날 방은 존재하지 않습니다.');
+    const roomList = this.roomsService.findAll();
+    this.server.to(로비.id).emit('roomList', roomList);
   }
 }
+
+// TODO: 로비랑 룸 모듈 따로 나누기
