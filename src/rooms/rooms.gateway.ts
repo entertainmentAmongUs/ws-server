@@ -53,6 +53,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     });
 
     const currentUserInLobby = this.roomsService.findById(로비.id).users;
+    this.logger.log(currentUserInLobby);
     this.server.to(로비.id).emit('connectedUserList', currentUserInLobby);
 
     const roomList = this.roomsService.findAll();
