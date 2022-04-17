@@ -73,7 +73,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('createRoom')
-  createRoom(@ConnectedSocket() socket: Socket, data: Room) {
+  createRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: Room) {
     this.roomsService.create(data);
     this.server.to(로비.id).emit('newRoom', data.id);
 
