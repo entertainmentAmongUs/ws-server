@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class RoomDto {
   @ApiProperty()
-  id: String;
+  id: string;
   @ApiProperty()
   maxUser: number;
   @ApiProperty()

@@ -94,7 +94,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     };
 
     this.roomsService.createUser(newUser);
-    this.roomsService.join(로비.id, newUser);
+    this.roomsService.joinLobby(로비.id, newUser);
 
     const currentUserInLobby = this.roomsService.findById(로비.id).users;
     this.logger.log(currentUserInLobby);
@@ -122,7 +122,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     const newRoom = this.roomsService.create(data);
 
-    const user = this.roomsService.findUserById(socket.id);
+    const user = {
+      isHost: true,
+      isReady: false,
+      ...this.roomsService.findUserById(socket.id),
+    };
     this.roomsService.join(newRoom.id, user);
 
     this.server.to(로비.id).emit('newRoom', newRoom.id);
@@ -132,7 +136,20 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  joinRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: RoomDto['id']
+  ) {
+    const room = this.roomsService.findById(data);
+    const user = {
+      isHost: false,
+      isReady: false,
+      ...this.roomsService.findUserById(socket.id),
+    };
+    const updatedRoom = this.roomsService.join(room.id, user);
+
+    this.server.to(room.id).emit('userList', updatedRoom.users);
+  }
 
   @SubscribeMessage('getReady')
   getReady(@ConnectedSocket() socket: Socket, @MessageBody() data) {}

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { createRoomDto, RoomDto } from './dtos/room.dto';
@@ -40,6 +41,18 @@ export class RoomsService {
     this.logger.log(this.rooms);
   }
 
+  joinLobby(id: Room['id'], user: User) {
+    if (!this.findById(id)) {
+      throw new Error('해당 로비가 존재하지 않습니다.');
+    }
+
+    const roomIndex = this.findByIndex(id);
+
+    this.rooms[roomIndex].users = [...this.rooms[roomIndex].users, user];
+    this.logger.log('로비에 참여하였습니다.');
+    this.logger.log(this.rooms);
+  }
+
   create(room: createRoomDto) {
     const roomObject = {
       ...room,
@@ -54,7 +67,7 @@ export class RoomsService {
     return roomObject;
   }
 
-  join(id: Room['id'], user: User) {
+  join(id: Room['id'], user: RoomInUser) {
     if (!this.findById(id)) {
       throw new Error('해당 방 정보가 존재하지 않습니다.');
     }
@@ -64,6 +77,8 @@ export class RoomsService {
     this.rooms[roomIndex].users = [...this.rooms[roomIndex].users, user];
     this.logger.log('방에 참여하였습니다.');
     this.logger.log(this.rooms);
+
+    return this.rooms[roomIndex];
   }
 
   leaveBySocketId(socketId: string) {
