@@ -17,7 +17,18 @@ export const 로비: Room = {
 @Injectable()
 export class RoomsService {
   private readonly rooms: Room[] = [];
+  private readonly users: User[] = [];
   private logger: Logger = new Logger('RoomsService');
+
+  createUser(user: User) {
+    this.users.push(user);
+
+    return this.users;
+  }
+
+  findUserById(id: User['id']) {
+    return this.users.find((user) => user.id === id);
+  }
 
   createLobby() {
     if (this.findById(로비.id)) {

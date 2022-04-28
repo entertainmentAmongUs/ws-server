@@ -86,11 +86,15 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.logger.log(`유저가 채널에 접속하였습니다.`);
     this.roomsService.createLobby();
     this.server.socketsJoin(로비.id);
-    this.roomsService.join(로비.id, {
+
+    const newUser = {
       id: socket.id,
       userId: data.userId,
       nickName: data.nickName,
-    });
+    };
+
+    this.roomsService.createUser(newUser);
+    this.roomsService.join(로비.id, newUser);
 
     const currentUserInLobby = this.roomsService.findById(로비.id).users;
     this.logger.log(currentUserInLobby);
@@ -117,6 +121,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @MessageBody() data: createRoomDto
   ) {
     const newRoom = this.roomsService.create(data);
+
+    const user = this.roomsService.findUserById(socket.id);
+    this.roomsService.join(newRoom.id, user);
+
     this.server.to(로비.id).emit('newRoom', newRoom.id);
 
     const roomList = this.roomsService.findAll();
