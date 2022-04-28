@@ -91,6 +91,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       id: socket.id,
       userId: data.userId,
       nickName: data.nickName,
+      isReady: false,
+      isHost: false,
     };
 
     this.roomsService.createUser(newUser);
@@ -138,9 +140,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   joinRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: RoomDto['id']
+    @MessageBody() data: { roomId: RoomDto['id'] }
   ) {
-    const room = this.roomsService.findById(data);
+    const room = this.roomsService.findById(data.roomId);
     const user = {
       isHost: false,
       isReady: false,
@@ -152,7 +154,34 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('getReady')
-  getReady(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  getReady(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: UserDto['id']
+  ) {
+    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
+
+    const roomInfo = this.roomsService.updateUserReadyStatus(
+      roomIndex,
+      socket.id
+    );
+
+    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
+
+    if (roomInfo.users.every((user) => user.isReady)) {
+      const order = Array()
+        .fill(roomInfo.users.length)
+        .map((_, i) => {
+          return i;
+        });
+
+      this.server.to(roomInfo.id).emit('startGame', {
+        keyword: '닭꼬치',
+        time: '180',
+        order,
+        liarNumber: 0,
+      });
+    }
+  }
 
   @SubscribeMessage('leaveRoom')
   leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}

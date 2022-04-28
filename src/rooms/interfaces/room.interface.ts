@@ -1,11 +1,11 @@
-import { User } from 'src/users/interfaces/user.interface';
+import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 
 export interface Room {
   id: string;
   maxUser: number;
   title: string;
   password: string | null;
-  users: User[];
+  users: RoomInUser[];
   gameType: string | null;
   subject: string | null;
 }

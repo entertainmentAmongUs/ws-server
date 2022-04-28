@@ -18,10 +18,10 @@ export const 로비: Room = {
 @Injectable()
 export class RoomsService {
   private readonly rooms: Room[] = [];
-  private readonly users: User[] = [];
+  private readonly users: RoomInUser[] = [];
   private logger: Logger = new Logger('RoomsService');
 
-  createUser(user: User) {
+  createUser(user: RoomInUser) {
     this.users.push(user);
 
     return this.users;
@@ -41,7 +41,7 @@ export class RoomsService {
     this.logger.log(this.rooms);
   }
 
-  joinLobby(id: Room['id'], user: User) {
+  joinLobby(id: Room['id'], user: RoomInUser) {
     if (!this.findById(id)) {
       throw new Error('해당 로비가 존재하지 않습니다.');
     }
@@ -82,7 +82,7 @@ export class RoomsService {
   }
 
   leaveBySocketId(socketId: string) {
-    if (!this.findById(socketId)) {
+    if (!this.findByUserSocketId(socketId)) {
       throw new Error('해당 방 정보가 존재하지 않습니다.');
     }
 
@@ -129,7 +129,17 @@ export class RoomsService {
     return rooms;
   }
 
-  update() {}
+  updateUserReadyStatus(roomIndex: number, userId: RoomInUser['id']) {
+    this.rooms[roomIndex].users = this.rooms[roomIndex].users.map((x) => {
+      if (x.id === userId) {
+        return { ...x, ready: !x.isReady };
+      }
+
+      return x;
+    });
+
+    return this.rooms[roomIndex];
+  }
 
   delete() {}
 }
