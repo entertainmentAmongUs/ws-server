@@ -125,9 +125,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const newRoom = this.roomsService.create(data);
 
     const user = {
+      ...this.roomsService.findUserById(socket.id),
       isHost: true,
       isReady: false,
-      ...this.roomsService.findUserById(socket.id),
     };
     this.server.socketsJoin(newRoom.id);
     this.roomsService.join(newRoom.id, user);
@@ -145,9 +145,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     const room = this.roomsService.findById(data.roomId);
     const user = {
+      ...this.roomsService.findUserById(socket.id),
       isHost: false,
       isReady: false,
-      ...this.roomsService.findUserById(socket.id),
     };
     this.server.socketsJoin(data.roomId);
     const updatedRoom = this.roomsService.join(room.id, user);
