@@ -78,6 +78,8 @@ export class RoomsService {
     const rooms: RoomDto[] = this.rooms // TODO: 데이터 바꿔주는 다른 모듈로 빼기
       .filter((room) => room.id !== 로비.id)
       .map((room) => {
+        console.log(room);
+
         return {
           id: room.id,
           maxUser: room.maxUser,

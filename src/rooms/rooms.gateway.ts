@@ -8,9 +8,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { AsyncApiService } from 'nestjs-asyncapi';
+import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { User } from 'src/users/interfaces/user.interface';
+import { RoomDto } from './dtos/room.dto';
+import { LoginDto, UserDto } from './dtos/user.dto';
 import { Room } from './interfaces/room.interface';
 import { RoomsService, 로비 } from './rooms.service';
 
@@ -33,6 +35,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   handleConnection(client) {
     this.logger.log(`유저가 접속했습니다: ${client.id}`);
   }
+
   handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
     // TODO: 유저가 접속한 모든 방에서 로그아웃
@@ -40,6 +43,43 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('login')
+  @AsyncApiSub({
+    channel: 'login',
+    summary: '로그인',
+    description: '로비에 해당 유저를 추가합니다.',
+    message: {
+      name: '클라이언트는 로비 접속을 위해 해당 데이터를 보냅니다.',
+      payload: {
+        type: LoginDto,
+      },
+    },
+  })
+  @AsyncApiPub(
+    {
+      channel: 'login',
+      summary: '로그인',
+      operationId: 'connectedUserList',
+      description: '로비에 해당 유저를 추가합니다.',
+      message: {
+        name: '로비에 접속한 유저들에게 현재 방에 접속한 유저들의 리스트를 줍니다.',
+        payload: {
+          type: UserDto,
+        },
+      },
+    },
+    {
+      channel: 'login',
+      summary: '로그인',
+      operationId: 'roomList',
+      description: '로비에 해당 유저를 추가합니다.',
+      message: {
+        name: '로비에 접속한 유저들에게 현재 방에 접속한 방의 리스트를 줍니다.',
+        payload: {
+          type: RoomDto,
+        },
+      },
+    }
+  )
   login(
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: Omit<User, 'id'>
@@ -80,6 +120,24 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const roomList = this.roomsService.findAll();
     this.server.to(로비.id).emit('roomList', roomList);
   }
+
+  @SubscribeMessage('joinRoom')
+  joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+
+  @SubscribeMessage('getReady')
+  getReady(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+
+  @SubscribeMessage('leaveRoom')
+  leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+
+  @SubscribeMessage('kick')
+  kick(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+
+  @SubscribeMessage('editRoom')
+  editRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+
+  @SubscribeMessage('chatMessage')
+  chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
 }
 
 // TODO: 로비랑 룸 모듈 따로 나누기
