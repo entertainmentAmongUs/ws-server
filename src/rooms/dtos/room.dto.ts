@@ -16,3 +16,16 @@ export class RoomDto {
   @ApiProperty()
   subject: string;
 }
+
+export class createRoomDto {
+  @ApiProperty()
+  title: string;
+  @ApiProperty()
+  password: string;
+  @ApiProperty()
+  gameType: string;
+  @ApiProperty()
+  subject: string;
+  @ApiProperty()
+  maxUser: string;
+}

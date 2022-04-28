@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { User } from 'src/users/interfaces/user.interface';
-import { RoomDto } from './dtos/room.dto';
+import { v4 as uuidv4 } from 'uuid';
+import { createRoomDto, RoomDto } from './dtos/room.dto';
 import { Room } from './interfaces/room.interface';
 
 export const 로비: Room = {
@@ -28,10 +29,18 @@ export class RoomsService {
     this.logger.log(this.rooms);
   }
 
-  create(room: Room) {
-    this.rooms.push(room);
+  create(room: createRoomDto) {
+    const roomObject = {
+      ...room,
+      users: [],
+      maxUser: Number(room.maxUser),
+      id: uuidv4(),
+    };
+    this.rooms.push(roomObject);
     this.logger.log('방을 생성하였습니다.');
     this.logger.log(this.rooms);
+
+    return roomObject;
   }
 
   join(id: Room['id'], user: User) {

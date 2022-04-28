@@ -11,9 +11,8 @@ import {
 import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { User } from 'src/users/interfaces/user.interface';
-import { RoomDto } from './dtos/room.dto';
+import { createRoomDto, RoomDto } from './dtos/room.dto';
 import { LoginDto, UserDto } from './dtos/user.dto';
-import { Room } from './interfaces/room.interface';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -113,9 +112,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('createRoom')
-  createRoom(@ConnectedSocket() socket: Socket, @MessageBody() data: Room) {
-    this.roomsService.create(data);
-    this.server.to(로비.id).emit('newRoom', data.id);
+  createRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: createRoomDto
+  ) {
+    const newRoom = this.roomsService.create(data);
+    this.server.to(로비.id).emit('newRoom', newRoom.id);
 
     const roomList = this.roomsService.findAll();
     this.server.to(로비.id).emit('roomList', roomList);
