@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 
 export class UserDto {
   @ApiProperty()
@@ -10,3 +10,5 @@ export class UserDto {
 }
 
 export class LoginDto extends OmitType(UserDto, ['id']) {}
+
+export class KickDto extends PickType(UserDto, ['id']) {}

@@ -29,3 +29,22 @@ export class createRoomDto {
   @ApiProperty()
   maxUser: string;
 }
+export class editRoomDto {
+  @ApiProperty()
+  id: string;
+  @ApiProperty()
+  maxUser: number;
+  @ApiProperty()
+  title: string;
+  @ApiProperty()
+  password: string | null;
+  @ApiProperty()
+  subject: string;
+}
+
+export class chatDto {
+  @ApiProperty()
+  roomId: string;
+  @ApiProperty()
+  message: string;
+}

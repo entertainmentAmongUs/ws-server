@@ -46,7 +46,7 @@ export class RoomsService {
       throw new Error('해당 로비가 존재하지 않습니다.');
     }
 
-    const roomIndex = this.findByIndex(id);
+    const roomIndex = this.findRoomIndex(id);
 
     this.rooms[roomIndex].users = [...this.rooms[roomIndex].users, user];
     this.logger.log('로비에 참여하였습니다.');
@@ -72,7 +72,7 @@ export class RoomsService {
       throw new Error('해당 방 정보가 존재하지 않습니다.');
     }
 
-    const roomIndex = this.findByIndex(id);
+    const roomIndex = this.findRoomIndex(id);
 
     this.rooms[roomIndex].users = [...this.rooms[roomIndex].users, user];
     this.logger.log('방에 참여하였습니다.');
@@ -105,8 +105,12 @@ export class RoomsService {
     return this.rooms.findIndex((room) => room.users.some((x) => x.id === id));
   }
 
-  findByIndex(id: Room['id']) {
+  findRoomIndex(id: Room['id']) {
     return this.rooms.findIndex((room) => room.id === id);
+  }
+
+  findRoomInfoByRoomIndex(idx: number) {
+    return this.rooms[idx];
   }
 
   findAll() {
@@ -137,6 +141,12 @@ export class RoomsService {
 
       return x;
     });
+
+    return this.rooms[roomIndex];
+  }
+
+  updateRoomInfo(roomIndex, roomData: Room) {
+    this.rooms[roomIndex] = roomData;
 
     return this.rooms[roomIndex];
   }

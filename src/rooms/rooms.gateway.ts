@@ -11,8 +11,8 @@ import {
 import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { User } from 'src/users/interfaces/user.interface';
-import { createRoomDto, RoomDto } from './dtos/room.dto';
-import { LoginDto, UserDto } from './dtos/user.dto';
+import { chatDto, createRoomDto, editRoomDto, RoomDto } from './dtos/room.dto';
+import { KickDto, LoginDto, UserDto } from './dtos/user.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -186,16 +186,68 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leaveRoom')
-  leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {
+    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
+    const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
+
+    this.server.socketsLeave(roomInfo.id);
+    if (
+      roomInfo.users.findIndex((user) => user.id === socket.id) === 0 &&
+      roomInfo.users.length > 1
+    ) {
+      roomInfo.users[1].isHost = true;
+    }
+
+    roomInfo.users.filter((user) => user.id !== socket.id);
+    this.roomsService.updateRoomInfo(roomIndex, roomInfo);
+
+    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
+  }
 
   @SubscribeMessage('kick')
-  kick(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  kick(@ConnectedSocket() socket: Socket, @MessageBody() data: KickDto) {
+    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
+    const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
+
+    this.server.socketsLeave(roomInfo.id);
+    roomInfo.users.filter((user) => user.id !== data.id);
+    this.roomsService.updateRoomInfo(roomIndex, roomInfo);
+
+    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
+    this.server.to(roomInfo.id).emit('exile', data.id);
+  }
 
   @SubscribeMessage('editRoom')
-  editRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  editRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: editRoomDto
+  ) {
+    const roomInfo = this.roomsService.findById(data.id);
+    const roomIndex = this.roomsService.findRoomIndex(data.id);
+
+    const newRoomInfo = {
+      ...roomInfo,
+      ...data,
+    };
+
+    const updatedRoomData = this.roomsService.updateRoomInfo(
+      roomIndex,
+      newRoomInfo
+    );
+    this.server.to(roomInfo.id).emit('updateRoom', updatedRoomData);
+  }
 
   @SubscribeMessage('chatMessage')
-  chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data) {}
+  chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: chatDto) {
+    const user = this.roomsService.findUserById(socket.id);
+
+    this.server
+      .to(data.roomId)
+      .emit('newChatMessage', {
+        nickName: user.nickName,
+        message: data.message,
+      });
+  }
 }
 
 // TODO: 로비랑 룸 모듈 따로 나누기
