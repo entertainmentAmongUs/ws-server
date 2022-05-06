@@ -8,11 +8,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { AsyncApiPub, AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
+import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { User } from 'src/users/interfaces/user.interface';
 import { chatDto, createRoomDto, editRoomDto, RoomDto } from './dtos/room.dto';
-import { KickDto, LoginDto, UserDto } from './dtos/user.dto';
+import { KickDto, UserDto } from './dtos/user.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -42,43 +42,6 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('login')
-  @AsyncApiSub({
-    channel: 'login',
-    summary: '로그인',
-    description: '로비에 해당 유저를 추가합니다.',
-    message: {
-      name: '클라이언트는 로비 접속을 위해 해당 데이터를 보냅니다.',
-      payload: {
-        type: LoginDto,
-      },
-    },
-  })
-  @AsyncApiPub(
-    {
-      channel: 'login',
-      summary: '로그인',
-      operationId: 'connectedUserList',
-      description: '로비에 해당 유저를 추가합니다.',
-      message: {
-        name: '로비에 접속한 유저들에게 현재 방에 접속한 유저들의 리스트를 줍니다.',
-        payload: {
-          type: UserDto,
-        },
-      },
-    },
-    {
-      channel: 'login',
-      summary: '로그인',
-      operationId: 'roomList',
-      description: '로비에 해당 유저를 추가합니다.',
-      message: {
-        name: '로비에 접속한 유저들에게 현재 방에 접속한 방의 리스트를 줍니다.',
-        payload: {
-          type: RoomDto,
-        },
-      },
-    }
-  )
   login(
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: Omit<User, 'id'>
@@ -241,12 +204,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: chatDto) {
     const user = this.roomsService.findUserById(socket.id);
 
-    this.server
-      .to(data.roomId)
-      .emit('newChatMessage', {
-        nickName: user.nickName,
-        message: data.message,
-      });
+    this.server.to(data.roomId).emit('newChatMessage', {
+      nickName: user.nickName,
+      message: data.message,
+    });
   }
 }
 
