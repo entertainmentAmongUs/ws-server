@@ -38,7 +38,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
     // TODO: 유저가 접속한 모든 방에서 로그아웃
-    this.roomsService.leaveBySocketId(client.id);
+    if (!this.roomsService.findById(client.id)) {
+      this.roomsService.leaveBySocketId(client.id);
+    }
   }
 
   @SubscribeMessage('login')

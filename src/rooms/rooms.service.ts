@@ -83,7 +83,7 @@ export class RoomsService {
 
   leaveBySocketId(socketId: string) {
     if (this.findByUserSocketId(socketId) === -1) {
-      throw new Error('해당 방 정보가 존재하지 않습니다.');
+      return -1;
     }
 
     const roomIndex = this.findByUserSocketId(socketId);
