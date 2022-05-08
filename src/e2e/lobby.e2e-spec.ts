@@ -33,7 +33,9 @@ describe('로비 접속 테스트', () => {
   it('2. 로비에 접속하면 로비에 접속해있는 유저 목록을 받는다', (done) => {
     user1.emit('joinLobby', user1Info);
     user1.on('lobbyUserList', (data) => {
-      console.log(data);
+      expect(data).toEqual(
+        expect.arrayContaining([expect.objectContaining(user1Info)])
+      );
       done();
     });
   });
