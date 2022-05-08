@@ -53,9 +53,9 @@ describe('로비 테스트', () => {
   it('2. 로비에 접속하면 로비에 접속해있는 유저 목록을 받는다', (done) => {
     user1.emit('joinLobby', user1Info);
     user1.on('lobbyUserList', (data) => {
-      expect(data).toEqual(
-        expect.arrayContaining([expect.objectContaining(user1Info)])
-      );
+      expect(data).toMatchObject({
+        users: expect.arrayContaining([expect.objectContaining(user1Info)]),
+      });
       done();
     });
   });
@@ -74,8 +74,27 @@ describe('로비 테스트', () => {
   it('4. 방을 만들면 방 아이디를 받는다.', (done) => {
     user1.emit('createRoom', createRoomInfo);
     user1.on('createRoom', (data) => {
-      console.log(data);
       expect(data).toMatchObject({ roomId: expect.any(String) });
+      done();
+    });
+  });
+
+  it('5. 방이 만들어져 있을 때 방목록을 가져오면 방목록이 들어있다.', (done) => {
+    user2.emit('roomList');
+    user2.on('roomList', (data) => {
+      expect(data).toMatchObject({
+        roomList: expect.arrayContaining([
+          {
+            roomId: expect.any(String),
+            maxUser: expect.any(Number),
+            title: expect.any(String),
+            password: expect.any(String),
+            users: expect.any(Object),
+            gameType: expect.any(String),
+            subject: expect.any(String),
+          },
+        ]),
+      });
       done();
     });
   });
