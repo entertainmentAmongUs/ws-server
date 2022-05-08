@@ -8,6 +8,26 @@ const user1Info: UserDto = {
   nickName: '허균',
 };
 
+const user2Info: UserDto = {
+  userId: 'user2',
+  nickName: '김윤수',
+};
+
+const chatData = {
+  roomId: 'LOBBY',
+  nickName: '허균',
+  message: '안녕하세요',
+};
+
+const createRoomInfo = {
+  title: '방1번',
+  password: '1234',
+  gameType: '라이어게임',
+  subject: '안녕하세요',
+  maxUser: 2,
+  userId: 8,
+};
+
 describe('로비 접속 테스트', () => {
   let user1: Socket, user2: Socket, app: INestApplication;
 
@@ -22,10 +42,10 @@ describe('로비 접속 테스트', () => {
     user2 = connect(TEST_URL);
   });
 
-  it('1. 로비에 접속하면 방 목록을 받는다.', (done) => {
+  it('1. 최초에 로비에 접속하면 빈 방 목록을 받는다.', (done) => {
     user1.emit('joinLobby', user1Info);
     user1.on('roomList', (data) => {
-      console.log(data);
+      expect(data).toEqual({ roomList: [] });
       done();
     });
   });
@@ -36,6 +56,26 @@ describe('로비 접속 테스트', () => {
       expect(data).toEqual(
         expect.arrayContaining([expect.objectContaining(user1Info)])
       );
+      done();
+    });
+  });
+
+  it('3. 로비에 접속한 유저가 로비에 채팅을 보내면 로비에 접속한 다른 유저가 채팅을 받는다', (done) => {
+    user1.emit('joinLobby', user1Info);
+    user2.emit('joinLobby', user2Info);
+
+    user1.emit('chat', chatData);
+    user2.on('chat', (data) => {
+      expect(data).toEqual(chatData);
+      done();
+    });
+  });
+
+  it('4. 방을 만들면 방 아이디를 받는다.', (done) => {
+    user1.emit('createRoom', createRoomInfo);
+    user1.on('createRoom', (data) => {
+      console.log(data);
+      expect(data).toMatchObject({ roomId: expect.any(String) });
       done();
     });
   });

@@ -33,7 +33,10 @@ export class createRoomDto {
   subject: string;
   @ApiProperty()
   maxUser: string;
+  @ApiProperty()
+  userId: string;
 }
+
 export class editRoomDto {
   @ApiProperty()
   id: string;

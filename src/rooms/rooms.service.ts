@@ -27,8 +27,8 @@ export class RoomsService {
     return this.users;
   }
 
-  findUserById(id: User['id']) {
-    return this.users.find((user) => user.id === id);
+  findUserById(id: User['socketId']) {
+    return this.users.find((user) => user.socketId === id);
   }
 
   createLobby() {
@@ -53,7 +53,7 @@ export class RoomsService {
     this.logger.log(this.rooms);
   }
 
-  create(room: createRoomDto) {
+  create(room: Omit<createRoomDto, 'userId'>) {
     const roomObject = {
       ...room,
       users: [],
@@ -89,7 +89,7 @@ export class RoomsService {
     const roomIndex = this.findByUserSocketId(socketId);
 
     this.rooms[roomIndex].users = this.rooms[roomIndex].users.filter(
-      (user) => user.id !== socketId
+      (user) => user.socketId !== socketId
     );
     this.logger.log('방을 떠났습니다.');
     this.logger.log(this.rooms);
@@ -102,7 +102,9 @@ export class RoomsService {
   }
 
   findByUserSocketId(id: string) {
-    return this.rooms.findIndex((room) => room.users.some((x) => x.id === id));
+    return this.rooms.findIndex((room) =>
+      room.users.some((x) => x.socketId === id)
+    );
   }
 
   findRoomIndex(id: Room['roomId']) {
@@ -133,9 +135,9 @@ export class RoomsService {
     return rooms;
   }
 
-  updateUserReadyStatus(roomIndex: number, userId: RoomInUser['id']) {
+  updateUserReadyStatus(roomIndex: number, userId: RoomInUser['socketId']) {
     this.rooms[roomIndex].users = this.rooms[roomIndex].users.map((x) => {
-      if (x.id === userId) {
+      if (x.socketId === userId) {
         return { ...x, ready: !x.isReady };
       }
 

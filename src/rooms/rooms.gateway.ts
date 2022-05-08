@@ -11,6 +11,7 @@ import {
 import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
+import { ChatDto } from './dtos/chat.dto';
 import { chatDto, createRoomDto, editRoomDto, RoomDto } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
@@ -48,7 +49,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.socketsJoin(로비.roomId);
 
     const newUser = {
-      id: socket.id,
+      socketId: socket.id,
       userId: data.userId,
       nickName: data.nickName,
       isReady: false,
@@ -64,15 +65,13 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(로비.roomId).emit('roomList', { roomList });
   }
 
-  @SubscribeMessage('lobbyChatMessage')
+  @SubscribeMessage('chat')
   lobbyChat(
     @ConnectedSocket() socket: Socket,
     @MessageBody()
-    data: { nickName: string; message: string }
+    data: ChatDto
   ) {
-    this.logger.log('채팅 메시지를 보냈습니다.');
-    this.logger.log(data);
-    this.server.to(로비.roomId).emit('newLobbyChatMessage', data);
+    this.server.to(data.roomId).emit('chat', data);
   }
 
   @SubscribeMessage('createRoom')
@@ -80,20 +79,17 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: createRoomDto
   ) {
-    const newRoom = this.roomsService.create(data);
+    const { userId, ...roomInfo } = data;
+    const newRoom = this.roomsService.create(roomInfo);
 
     const user = {
       ...this.roomsService.findUserById(socket.id),
-      isHost: true,
       isReady: false,
     };
     this.server.socketsJoin(newRoom.roomId);
     this.roomsService.join(newRoom.roomId, user);
 
-    this.server.to(로비.roomId).emit('newRoom', newRoom.roomId);
-
-    const roomList = this.roomsService.findAll();
-    this.server.to(로비.roomId).emit('roomList', roomList);
+    this.server.to(socket.id).emit('createRoom', { roomId: newRoom.roomId });
   }
 
   @SubscribeMessage('joinRoom')
@@ -104,7 +100,6 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const room = this.roomsService.findById(data.roomId);
     const user = {
       ...this.roomsService.findUserById(socket.id),
-      isHost: false,
       isReady: false,
     };
     this.server.socketsJoin(data.roomId);
@@ -150,13 +145,13 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     this.server.socketsLeave(roomInfo.roomId);
     if (
-      roomInfo.users.findIndex((user) => user.id === socket.id) === 0 &&
+      roomInfo.users.findIndex((user) => user.socketId === socket.id) === 0 &&
       roomInfo.users.length > 1
     ) {
       // roomInfo.users[1].isHost = true;
     }
 
-    roomInfo.users.filter((user) => user.id !== socket.id);
+    roomInfo.users.filter((user) => user.socketId !== socket.id);
     this.roomsService.updateRoomInfo(roomIndex, roomInfo);
 
     this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
@@ -168,7 +163,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
 
     this.server.socketsLeave(roomInfo.roomId);
-    roomInfo.users.filter((user) => user.id !== data.userId);
+    roomInfo.users.filter((user) => user.socketId !== data.userId);
     this.roomsService.updateRoomInfo(roomIndex, roomInfo);
 
     this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
