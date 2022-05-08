@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserDto } from 'src/users/dto/user.dto';
 
 export class RoomDto {
   @ApiProperty()
-  id: string;
+  roomId: string;
   @ApiProperty()
   maxUser: number;
   @ApiProperty()
@@ -10,7 +11,7 @@ export class RoomDto {
   @ApiProperty()
   password: string | null;
   @ApiProperty()
-  userCount: number;
+  users: UserDto[];
   @ApiProperty()
   gameType: string;
   @ApiProperty()

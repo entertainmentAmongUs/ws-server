@@ -1,7 +1,7 @@
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 
 export interface Room {
-  id: string;
+  roomId: string;
   maxUser: number;
   title: string;
   password: string | null;

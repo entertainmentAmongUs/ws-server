@@ -10,9 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
-import { User } from 'src/users/interfaces/user.interface';
+import { KickDto, UserDto } from 'src/users/dto/user.dto';
 import { chatDto, createRoomDto, editRoomDto, RoomDto } from './dtos/room.dto';
-import { KickDto, UserDto } from './dtos/user.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -43,32 +42,26 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('login')
-  login(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() data: Omit<User, 'id'>
-  ) {
-    this.logger.log(`유저가 채널에 접속하였습니다.`);
+  @SubscribeMessage('joinLobby')
+  login(@ConnectedSocket() socket: Socket, @MessageBody() data: UserDto) {
     this.roomsService.createLobby();
-    this.server.socketsJoin(로비.id);
+    this.server.socketsJoin(로비.roomId);
 
     const newUser = {
       id: socket.id,
       userId: data.userId,
       nickName: data.nickName,
       isReady: false,
-      isHost: false,
     };
 
     this.roomsService.createUser(newUser);
-    this.roomsService.joinLobby(로비.id, newUser);
+    this.roomsService.joinLobby(로비.roomId, newUser);
 
-    const currentUserInLobby = this.roomsService.findById(로비.id).users;
-    this.logger.log(currentUserInLobby);
-    this.server.to(로비.id).emit('connectedUserList', currentUserInLobby);
+    const lobbyUserList = this.roomsService.findById(로비.roomId).users;
+    this.server.to(로비.roomId).emit('lobbyUserList', lobbyUserList);
 
     const roomList = this.roomsService.findAll();
-    this.server.to(로비.id).emit('roomList', roomList);
+    this.server.to(로비.roomId).emit('roomList', roomList);
   }
 
   @SubscribeMessage('lobbyChatMessage')
@@ -79,7 +72,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     this.logger.log('채팅 메시지를 보냈습니다.');
     this.logger.log(data);
-    this.server.to(로비.id).emit('newLobbyChatMessage', data);
+    this.server.to(로비.roomId).emit('newLobbyChatMessage', data);
   }
 
   @SubscribeMessage('createRoom')
@@ -94,19 +87,19 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       isHost: true,
       isReady: false,
     };
-    this.server.socketsJoin(newRoom.id);
-    this.roomsService.join(newRoom.id, user);
+    this.server.socketsJoin(newRoom.roomId);
+    this.roomsService.join(newRoom.roomId, user);
 
-    this.server.to(로비.id).emit('newRoom', newRoom.id);
+    this.server.to(로비.roomId).emit('newRoom', newRoom.roomId);
 
     const roomList = this.roomsService.findAll();
-    this.server.to(로비.id).emit('roomList', roomList);
+    this.server.to(로비.roomId).emit('roomList', roomList);
   }
 
   @SubscribeMessage('joinRoom')
   joinRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: { roomId: RoomDto['id'] }
+    @MessageBody() data: { roomId: RoomDto['roomId'] }
   ) {
     const room = this.roomsService.findById(data.roomId);
     const user = {
@@ -115,15 +108,15 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       isReady: false,
     };
     this.server.socketsJoin(data.roomId);
-    const updatedRoom = this.roomsService.join(room.id, user);
+    const updatedRoom = this.roomsService.join(room.roomId, user);
 
-    this.server.to(room.id).emit('userList', updatedRoom.users);
+    this.server.to(room.roomId).emit('userList', updatedRoom.users);
   }
 
   @SubscribeMessage('getReady')
   getReady(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: UserDto['id']
+    @MessageBody() data: UserDto['userId']
   ) {
     const roomIndex = this.roomsService.findByUserSocketId(socket.id);
 
@@ -132,7 +125,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       socket.id
     );
 
-    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
+    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
 
     if (roomInfo.users.every((user) => user.isReady)) {
       const order = Array()
@@ -141,7 +134,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           return i;
         });
 
-      this.server.to(roomInfo.id).emit('startGame', {
+      this.server.to(roomInfo.roomId).emit('startGame', {
         keyword: '닭꼬치',
         time: '180',
         order,
@@ -155,18 +148,18 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const roomIndex = this.roomsService.findByUserSocketId(socket.id);
     const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
 
-    this.server.socketsLeave(roomInfo.id);
+    this.server.socketsLeave(roomInfo.roomId);
     if (
       roomInfo.users.findIndex((user) => user.id === socket.id) === 0 &&
       roomInfo.users.length > 1
     ) {
-      roomInfo.users[1].isHost = true;
+      // roomInfo.users[1].isHost = true;
     }
 
     roomInfo.users.filter((user) => user.id !== socket.id);
     this.roomsService.updateRoomInfo(roomIndex, roomInfo);
 
-    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
+    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
   }
 
   @SubscribeMessage('kick')
@@ -174,12 +167,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const roomIndex = this.roomsService.findByUserSocketId(socket.id);
     const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
 
-    this.server.socketsLeave(roomInfo.id);
-    roomInfo.users.filter((user) => user.id !== data.id);
+    this.server.socketsLeave(roomInfo.roomId);
+    roomInfo.users.filter((user) => user.id !== data.userId);
     this.roomsService.updateRoomInfo(roomIndex, roomInfo);
 
-    this.server.to(roomInfo.id).emit('userList', roomInfo.users);
-    this.server.to(roomInfo.id).emit('exile', data.id);
+    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
+    this.server.to(roomInfo.roomId).emit('exile', data.userId);
   }
 
   @SubscribeMessage('editRoom')
@@ -199,7 +192,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomIndex,
       newRoomInfo
     );
-    this.server.to(roomInfo.id).emit('updateRoom', updatedRoomData);
+    this.server.to(roomInfo.roomId).emit('updateRoom', updatedRoomData);
   }
 
   @SubscribeMessage('chatMessage')
