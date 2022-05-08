@@ -2,11 +2,11 @@ import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 
 export class User {
   @ApiProperty()
-  readonly socketId: String;
+  readonly socketId: string;
   @ApiProperty()
-  readonly userId: String;
+  readonly userId: string;
   @ApiProperty()
-  readonly nickName: String;
+  readonly nickName: string;
 }
 
 export class UserDto extends OmitType(User, ['socketId']) {}

@@ -8,4 +8,5 @@ export interface Room {
   users: RoomInUser[];
   gameType: string | null;
   subject: string | null;
+  hostId: string | null;
 }

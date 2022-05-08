@@ -13,6 +13,7 @@ export const 로비: Room = {
   users: [],
   gameType: null,
   subject: null,
+  hostId: null,
 };
 
 @Injectable()
@@ -59,6 +60,7 @@ export class RoomsService {
       users: [],
       maxUser: Number(room.maxUser),
       roomId: uuidv4(),
+      hostId: null,
     };
     this.rooms.push(roomObject);
     this.logger.log('방을 생성하였습니다.');
@@ -73,6 +75,10 @@ export class RoomsService {
     }
 
     const roomIndex = this.findRoomIndex(id);
+
+    if (this.rooms[roomIndex].users.length === 0) {
+      this.rooms[roomIndex].hostId = user.userId;
+    }
 
     this.rooms[roomIndex].users = [...this.rooms[roomIndex].users, user];
     this.logger.log('방에 참여하였습니다.');

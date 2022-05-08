@@ -28,7 +28,7 @@ const createRoomInfo = {
   userId: 8,
 };
 
-describe('로비 접속 테스트', () => {
+describe('로비 테스트', () => {
   let user1: Socket, user2: Socket, app: INestApplication;
 
   beforeAll(async () => {
