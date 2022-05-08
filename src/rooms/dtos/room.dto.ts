@@ -18,6 +18,10 @@ export class RoomDto {
   subject: string;
 }
 
+export class RoomListDto {
+  roomList: RoomDto[];
+}
+
 export class createRoomDto {
   @ApiProperty()
   title: string;

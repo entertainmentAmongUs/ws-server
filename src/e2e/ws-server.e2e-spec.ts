@@ -18,7 +18,7 @@ export async function createNestApp(): Promise<INestApplication> {
 describe('웹소켓 서버 e2e 테스트', () => {
   let user1: Socket, user2: Socket, app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     app = await createNestApp();
     await app.init();
     await app.listen(8080);
@@ -39,8 +39,9 @@ describe('웹소켓 서버 e2e 테스트', () => {
     });
   });
 
-  afterEach(() => {
+  afterAll(() => {
     app.close();
+    user1.close();
   });
 });
 

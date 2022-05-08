@@ -61,7 +61,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(로비.roomId).emit('lobbyUserList', lobbyUserList);
 
     const roomList = this.roomsService.findAll();
-    this.server.to(로비.roomId).emit('roomList', roomList);
+    this.server.to(로비.roomId).emit('roomList', { roomList });
   }
 
   @SubscribeMessage('lobbyChatMessage')
