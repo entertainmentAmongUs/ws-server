@@ -1,32 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import { connect, Socket } from 'socket.io-client';
-import { UserDto } from 'src/users/dto/user.dto';
-import { createNestApp, TEST_URL } from './ws-server.e2e-spec';
-
-const user1Info: UserDto = {
-  userId: 'user1',
-  nickName: '허균',
-};
-
-const user2Info: UserDto = {
-  userId: 'user2',
-  nickName: '김윤수',
-};
-
-const chatData = {
-  roomId: 'LOBBY',
-  nickName: '허균',
-  message: '안녕하세요',
-};
-
-const createRoomInfo = {
-  title: '방1번',
-  password: '1234',
-  gameType: '라이어게임',
-  subject: '안녕하세요',
-  maxUser: 2,
-  userId: 8,
-};
+import {
+  chatData,
+  createRoomInfo,
+  TEST_URL,
+  user1Info,
+  user2Info,
+} from './e2e.mocking';
+import { createNestApp } from './ws-server.e2e-spec';
 
 describe('로비 테스트', () => {
   let user1: Socket, user2: Socket, app: INestApplication;
@@ -106,7 +87,5 @@ describe('로비 테스트', () => {
 
   afterAll(() => {
     app.close();
-    user1.close();
-    user2.close();
   });
 });

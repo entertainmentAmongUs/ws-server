@@ -22,6 +22,10 @@ export class RoomListDto {
   roomList: RoomDto[];
 }
 
+export class RoomInfoDto {
+  roomId: string;
+}
+
 export class createRoomDto {
   @ApiProperty()
   title: string;

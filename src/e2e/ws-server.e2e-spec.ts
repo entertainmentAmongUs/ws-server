@@ -3,8 +3,7 @@ import { Test } from '@nestjs/testing';
 import { connect, Socket } from 'socket.io-client';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
-
-export const TEST_URL = 'ws://localhost:8080';
+import { TEST_URL } from './e2e.mocking';
 
 export async function createNestApp(): Promise<INestApplication> {
   const moduleFixture = await Test.createTestingModule({

@@ -24,7 +24,6 @@ export class RoomsService {
 
   createUser(user: RoomInUser) {
     this.users.push(user);
-
     return this.users;
   }
 
@@ -159,5 +158,16 @@ export class RoomsService {
     return this.rooms[roomIndex];
   }
 
+  removeUserData(userSocketId: string) {
+    const userIndex = this.users.findIndex(
+      (user) => user.socketId === userSocketId
+    );
+    this.users.splice(userIndex, 1);
+
+    return this.users;
+  }
+
   delete() {}
 }
+
+// TODO: user와 room service 폴더 나누기

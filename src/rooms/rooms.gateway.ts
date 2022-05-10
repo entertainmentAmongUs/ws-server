@@ -12,7 +12,13 @@ import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
 import { ChatDto } from './dtos/chat.dto';
-import { chatDto, createRoomDto, editRoomDto, RoomDto } from './dtos/room.dto';
+import {
+  chatDto,
+  createRoomDto,
+  editRoomDto,
+  RoomDto,
+  RoomInfoDto,
+} from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -37,7 +43,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
-    // TODO: 유저가 접속한 모든 방에서 로그아웃
+    // TODO: 유저가 접속한 모든 방에서 로그아웃, 유저 데이터에서 삭제
     if (!this.roomsService.findById(client.id)) {
       this.roomsService.leaveBySocketId(client.id);
     }
@@ -109,9 +115,19 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('roomList')
-  roomInfo(@ConnectedSocket() socket: Socket) {
+  roomList(@ConnectedSocket() socket: Socket) {
     const roomList = this.roomsService.findAll();
     this.server.to(socket.id).emit('roomList', { roomList });
+  }
+
+  @SubscribeMessage('roomInfo')
+  roomInfo(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: RoomInfoDto
+  ) {
+    const roomInfo = this.roomsService.findById(data.roomId);
+
+    this.server.to(socket.id).emit('roomInfo', roomInfo);
   }
 
   @SubscribeMessage('getReady')
