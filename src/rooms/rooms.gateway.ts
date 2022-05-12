@@ -45,10 +45,18 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
     if (this.roomsService.IsUserInLobby(client.id)) {
       this.roomsService.leaveLobby(client.id);
+      const lobbyUserList = this.roomsService.findLobby().users;
+      this.server
+        .to(로비.roomId)
+        .emit('lobbyUserList', { users: lobbyUserList });
     }
 
     if (this.roomsService.findByUserSocketId(client.id)) {
+      const roomIndex = this.roomsService.findByUserSocketId(client.id);
       this.roomsService.leaveBySocketId(client.id);
+
+      const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
+      this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
     }
 
     if (this.roomsService.isExistUserData(client.id)) {

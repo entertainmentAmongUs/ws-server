@@ -31,6 +31,10 @@ describe('대기방 테스트', () => {
     });
   });
 
+  it('2. 방에 있는 유저가 방에서 disconnect하면 방에 있는 유저들에게 유저리스트를 보내준다.', (done) => {
+    done();
+  });
+
   afterEach(() => {
     user1.close();
     user2.close();
