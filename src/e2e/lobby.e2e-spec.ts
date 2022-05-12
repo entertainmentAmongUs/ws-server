@@ -80,6 +80,13 @@ describe('로비 테스트', () => {
     });
   });
 
+  it('6. 유저가 로비를 들어온 후 방을 나가면 다른 유저에게 해당 유저가 없어진 것으로 반영이 된다.', () => {
+    user1.emit('joinLobby', user1Info);
+    user2.emit('joinLobby', user2Info);
+
+    user2.close();
+  });
+
   afterEach(() => {
     user1.close();
     user2.close();

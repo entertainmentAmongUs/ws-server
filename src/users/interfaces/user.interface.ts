@@ -1,5 +1,5 @@
 export interface User {
   readonly socketId: string;
-  readonly userId: string;
+  readonly userId: number;
   readonly nickName: string;
 }

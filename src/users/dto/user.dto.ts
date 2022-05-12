@@ -4,7 +4,7 @@ export class User {
   @ApiProperty()
   readonly socketId: string;
   @ApiProperty()
-  readonly userId: string;
+  readonly userId: number;
   @ApiProperty()
   readonly nickName: string;
 }

@@ -3,12 +3,12 @@ import { UserDto } from 'src/users/dto/user.dto';
 export const TEST_URL = 'ws://localhost:8080';
 
 export const user1Info: UserDto = {
-  userId: 'user1',
+  userId: 1,
   nickName: '허균',
 };
 
 export const user2Info: UserDto = {
-  userId: 'user2',
+  userId: 2,
   nickName: '김윤수',
 };
 

@@ -1,3 +1,4 @@
+import { LobbyUser } from 'src/users/interfaces/lobbyUser.interface';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 
 export interface Room {
@@ -8,5 +9,10 @@ export interface Room {
   users: RoomInUser[];
   gameType: string | null;
   subject: string | null;
-  hostId: string | null;
+  hostId: number | null;
+}
+export interface Lobby {
+  roomId: 'LOBBY';
+  maxUser: number;
+  users: LobbyUser[];
 }

@@ -50,8 +50,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinLobby')
-  login(@ConnectedSocket() socket: Socket, @MessageBody() data: UserDto) {
-    this.roomsService.createLobby();
+  joinLobby(@ConnectedSocket() socket: Socket, @MessageBody() data: UserDto) {
     this.server.socketsJoin(로비.roomId);
 
     const newUser = {
@@ -62,16 +61,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     };
 
     this.roomsService.createUser(newUser);
-    this.roomsService.joinLobby(로비.roomId, newUser);
+    this.roomsService.joinLobby({
+      userId: data.userId,
+      nickName: data.nickName,
+    });
 
-    const lobbyUserList = this.roomsService
-      .findById(로비.roomId)
-      .users.map((user) => {
-        return {
-          userId: user.userId,
-          nickName: user.nickName,
-        };
-      });
+    const lobbyUserList = this.roomsService.findLobby().users;
     this.server.to(로비.roomId).emit('lobbyUserList', { users: lobbyUserList });
 
     const roomList = this.roomsService.findAll();
@@ -192,7 +187,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
 
     this.server.socketsLeave(roomInfo.roomId);
-    roomInfo.users.filter((user) => user.socketId !== data.userId);
+    roomInfo.users.filter((user) => user.userId !== data.userId);
     this.roomsService.updateRoomInfo(roomIndex, roomInfo);
 
     this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
