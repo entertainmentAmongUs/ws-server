@@ -24,8 +24,8 @@ export class RoomsService {
     return this.users;
   }
 
-  findUserById(id: User['socketId']) {
-    return this.users.find((user) => user.socketId === id);
+  findUserById(socketId: User['socketId']) {
+    return this.users.find((user) => user.socketId === socketId);
   }
 
   // 로비
@@ -154,6 +154,12 @@ export class RoomsService {
     this.rooms[roomIndex] = roomData;
 
     return this.rooms[roomIndex];
+  }
+
+  IsUserInRoom(socketId: string) {
+    return this.rooms.some((room) =>
+      room.users.some((x) => x.socketId === socketId)
+    );
   }
 }
 

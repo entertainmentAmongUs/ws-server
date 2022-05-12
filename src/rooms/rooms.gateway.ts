@@ -51,7 +51,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         .emit('lobbyUserList', { users: lobbyUserList });
     }
 
-    if (this.roomsService.findByUserSocketId(client.id)) {
+    if (this.roomsService.IsUserInRoom(client.id)) {
       const roomIndex = this.roomsService.findByUserSocketId(client.id);
       this.roomsService.leaveBySocketId(client.id);
 
@@ -140,7 +140,18 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     const roomInfo = this.roomsService.findById(data.roomId);
 
-    this.server.to(socket.id).emit('roomInfo', roomInfo);
+    const sendRoomInfo = {
+      ...roomInfo,
+      users: roomInfo.users.map((user) => {
+        return {
+          userId: user.userId,
+          nickName: user.nickName,
+          isReady: user.isReady,
+        };
+      }),
+    };
+
+    this.server.to(socket.id).emit('roomInfo', sendRoomInfo);
   }
 
   @SubscribeMessage('getReady')
