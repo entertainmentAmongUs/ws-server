@@ -43,9 +43,16 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   handleDisconnect(client) {
     this.logger.log(`유저가 접속을 끊었습니다: ${client.id}`);
-    // TODO: 유저가 접속한 모든 방에서 로그아웃, 유저 데이터에서 삭제
-    if (!this.roomsService.findById(client.id)) {
+    if (this.roomsService.IsUserInLobby(client.id)) {
+      this.roomsService.leaveLobby(client.id);
+    }
+
+    if (this.roomsService.findByUserSocketId(client.id)) {
       this.roomsService.leaveBySocketId(client.id);
+    }
+
+    if (this.roomsService.isExistUserData(client.id)) {
+      this.roomsService.removeUserData(client.id);
     }
   }
 
@@ -57,14 +64,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       socketId: socket.id,
       userId: data.userId,
       nickName: data.nickName,
-      isReady: false,
     };
 
     this.roomsService.createUser(newUser);
-    this.roomsService.joinLobby({
-      userId: data.userId,
-      nickName: data.nickName,
-    });
+    this.roomsService.joinLobby(newUser);
 
     const lobbyUserList = this.roomsService.findLobby().users;
     this.server.to(로비.roomId).emit('lobbyUserList', { users: lobbyUserList });

@@ -1,5 +1,5 @@
-import { LobbyUser } from 'src/users/interfaces/lobbyUser.interface';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
+import { User } from 'src/users/interfaces/user.interface';
 
 export interface Room {
   roomId: string;
@@ -14,5 +14,5 @@ export interface Room {
 export interface Lobby {
   roomId: 'LOBBY';
   maxUser: number;
-  users: LobbyUser[];
+  users: User[];
 }

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { LobbyUser } from 'src/users/interfaces/lobbyUser.interface';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,10 +15,11 @@ export const 로비: Lobby = {
 export class RoomsService {
   private readonly lobby: Lobby = 로비;
   private readonly rooms: Room[] = [];
-  private readonly users: RoomInUser[] = [];
+  private readonly users: User[] = [];
   // private logger: Logger = new Logger('RoomsService');
 
-  createUser(user: RoomInUser) {
+  // 유저
+  createUser(user: User) {
     this.users.push(user);
     return this.users;
   }
@@ -28,7 +28,8 @@ export class RoomsService {
     return this.users.find((user) => user.socketId === id);
   }
 
-  joinLobby(user: LobbyUser) {
+  // 로비
+  joinLobby(user: User) {
     this.lobby.users = [...this.lobby.users, user];
   }
 
@@ -36,6 +37,30 @@ export class RoomsService {
     return this.lobby;
   }
 
+  IsUserInLobby(socketId: string) {
+    return this.lobby.users.find((user) => user.socketId === socketId);
+  }
+
+  isExistUserData(socketId: string) {
+    return this.users.find((user) => user.socketId === socketId);
+  }
+
+  removeUserData(socketId: string) {
+    const userIndex = this.users.findIndex(
+      (user) => user.socketId === socketId
+    );
+    this.users.splice(userIndex, 1);
+
+    return this.users;
+  }
+
+  leaveLobby(socketId: string) {
+    this.lobby.users = this.lobby.users.filter(
+      (user) => user.socketId !== socketId
+    );
+  }
+
+  // 방
   create(room: Omit<createRoomDto, 'userId'>) {
     const roomObject = {
       ...room,
@@ -81,9 +106,9 @@ export class RoomsService {
     return this.rooms.find((room) => room.roomId === id);
   }
 
-  findByUserSocketId(id: string) {
+  findByUserSocketId(socketId: string) {
     return this.rooms.findIndex((room) =>
-      room.users.some((x) => x.socketId === id)
+      room.users.some((x) => x.socketId === socketId)
     );
   }
 
@@ -125,26 +150,11 @@ export class RoomsService {
     return this.rooms[roomIndex];
   }
 
-  updateRoomInfo(roomIndex, roomData: Room) {
+  updateRoomInfo(roomIndex: number, roomData: Room) {
     this.rooms[roomIndex] = roomData;
 
     return this.rooms[roomIndex];
   }
-
-  removeUserData(userSocketId: string) {
-    const userIndex = this.users.findIndex(
-      (user) => user.socketId === userSocketId
-    );
-    this.users.splice(userIndex, 1);
-
-    return this.users;
-  }
-
-  // IsLobbyInUser(userSocketId: string) {
-  //   const isExistUser = this.
-  // }
-
-  delete() {}
 }
 
 // TODO: user와 room service 폴더 나누기
