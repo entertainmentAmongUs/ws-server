@@ -64,7 +64,14 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.roomsService.createUser(newUser);
     this.roomsService.joinLobby(로비.roomId, newUser);
 
-    const lobbyUserList = this.roomsService.findById(로비.roomId).users;
+    const lobbyUserList = this.roomsService
+      .findById(로비.roomId)
+      .users.map((user) => {
+        return {
+          userId: user.userId,
+          nickName: user.nickName,
+        };
+      });
     this.server.to(로비.roomId).emit('lobbyUserList', { users: lobbyUserList });
 
     const roomList = this.roomsService.findAll();
