@@ -70,6 +70,8 @@ export class editRoomDto {
   password: Room['password'];
   @ApiProperty()
   subject: Room['subject'];
+  @ApiProperty()
+  gameType: Room['gameType'];
 }
 
 export class chatDto {

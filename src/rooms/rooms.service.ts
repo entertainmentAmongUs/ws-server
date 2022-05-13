@@ -74,12 +74,12 @@ export class RoomsService {
     return roomObject;
   }
 
-  join(id: Room['roomId'], user: RoomInUser) {
-    if (!this.findById(id)) {
+  join(roomId: Room['roomId'], user: RoomInUser) {
+    if (!this.findById(roomId)) {
       throw new Error('해당 방 정보가 존재하지 않습니다.');
     }
 
-    const roomIndex = this.findRoomIndex(id);
+    const roomIndex = this.findRoomIndex(roomId);
 
     if (this.rooms[roomIndex].users.length === 0) {
       this.rooms[roomIndex].hostId = user.userId;
@@ -102,8 +102,8 @@ export class RoomsService {
     );
   }
 
-  findById(id: Room['roomId']) {
-    return this.rooms.find((room) => room.roomId === id);
+  findById(roomId: Room['roomId']) {
+    return this.rooms.find((room) => room.roomId === roomId);
   }
 
   findByUserSocketId(socketId: string) {
@@ -112,8 +112,8 @@ export class RoomsService {
     );
   }
 
-  findRoomIndex(id: Room['roomId']) {
-    return this.rooms.findIndex((room) => room.roomId === id);
+  findRoomIndex(roomId: Room['roomId']) {
+    return this.rooms.findIndex((room) => room.roomId === roomId);
   }
 
   findRoomInfoByRoomIndex(idx: number) {

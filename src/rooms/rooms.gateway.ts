@@ -235,19 +235,25 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: editRoomDto
   ) {
-    const roomInfo = this.roomsService.findById(data.id);
-    const roomIndex = this.roomsService.findRoomIndex(data.id);
+    const roomInfo = this.roomsService.findById(data.roomId);
+    const roomIndex = this.roomsService.findRoomIndex(data.roomId);
 
     const newRoomInfo = {
       ...roomInfo,
       ...data,
     };
 
-    const updatedRoomData = this.roomsService.updateRoomInfo(
+    // 최대 인원수가 현재 인원수보다 적으면 불가능하다는 메시지
+    if (newRoomInfo.maxUser < roomInfo.users.length) {
+      this.server.to(socket.id).emit('editRoom', { status: 'OVER_COUNT' });
+      return;
+    }
+
+    const updatedRoomInfo = this.roomsService.updateRoomInfo(
       roomIndex,
       newRoomInfo
     );
-    this.server.to(roomInfo.roomId).emit('updateRoom', updatedRoomData);
+    this.server.to(roomInfo.roomId).emit('roomInfo', updatedRoomInfo);
   }
 
   @SubscribeMessage('chatMessage')

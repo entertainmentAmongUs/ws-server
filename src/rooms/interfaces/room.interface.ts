@@ -8,7 +8,7 @@ export interface Room {
   title: string;
   password: string | null;
   users: RoomInUser[];
-  gameType: string | null;
+  gameType: 'LIAR' | 'IMAGE';
   subject: 라이어게임_제시어_타입;
   hostId: number | null;
 }
