@@ -52,3 +52,5 @@ export const 라이어게임_제시어 = [
   '이태원',
   '제주도',
 ] as const;
+
+export type 라이어게임_제시어_타입 = typeof 라이어게임_제시어[number];

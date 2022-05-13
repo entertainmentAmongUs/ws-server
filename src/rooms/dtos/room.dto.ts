@@ -1,21 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserDto } from 'src/users/dto/user.dto';
+import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
+import { User } from 'src/users/interfaces/user.interface';
+import { Room } from '../interfaces/room.interface';
 
 export class RoomDto {
   @ApiProperty()
-  roomId: string;
+  roomId: Room['roomId'];
   @ApiProperty()
-  maxUser: number;
+  maxUser: Room['maxUser'];
   @ApiProperty()
-  title: string;
+  title: Room['title'];
   @ApiProperty()
-  password: string | null;
+  password: Room['password'];
   @ApiProperty()
-  users: UserDto[];
+  users: RoomInUser[];
   @ApiProperty()
-  gameType: string;
+  gameType: Room['gameType'];
   @ApiProperty()
-  subject: string;
+  subject: Room['subject'];
 }
 
 export class RoomListDto {
@@ -23,63 +25,63 @@ export class RoomListDto {
 }
 
 export class RoomInfoDto {
-  roomId: string;
+  roomId: Room['roomId'];
 }
 
 export class createRoomDto {
   @ApiProperty()
-  title: string;
+  title: Room['title'];
   @ApiProperty()
-  password: string;
+  password: Room['password'];
   @ApiProperty()
-  gameType: string;
+  gameType: Room['gameType'];
   @ApiProperty()
-  subject: string;
+  subject: Room['subject'];
   @ApiProperty()
-  maxUser: string;
+  maxUser: Room['maxUser'];
   @ApiProperty()
-  userId: number;
+  userId: User['userId'];
 }
 
 export class joinRoomDto {
   @ApiProperty()
-  roomId: string;
+  roomId: Room['roomId'];
   @ApiProperty()
-  password?: string | null;
+  password?: Room['password'];
   @ApiProperty()
-  userId: number;
+  userId: User['userId'];
 }
 
 export class leaveRoomDto {
   @ApiProperty()
-  roomId: string;
+  roomId: Room['roomId'];
   @ApiProperty()
-  userId: number;
+  userId: User['userId'];
 }
 
 export class editRoomDto {
   @ApiProperty()
-  id: string;
+  roomId: Room['roomId'];
   @ApiProperty()
-  maxUser: number;
+  maxUser: Room['maxUser'];
   @ApiProperty()
-  title: string;
+  title: Room['title'];
   @ApiProperty()
-  password: string | null;
+  password: Room['password'];
   @ApiProperty()
-  subject: string;
+  subject: Room['subject'];
 }
 
 export class chatDto {
   @ApiProperty()
-  roomId: string;
+  roomId: Room['roomId'];
   @ApiProperty()
   message: string;
 }
 
 export class getReadyDto {
   @ApiProperty()
-  roomId: string;
+  roomId: Room['roomId'];
   @ApiProperty()
-  userId: number;
+  userId: User['userId'];
 }
