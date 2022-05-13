@@ -38,7 +38,16 @@ export class createRoomDto {
   @ApiProperty()
   maxUser: string;
   @ApiProperty()
-  userId: string;
+  userId: number;
+}
+
+export class joinRoomDto {
+  @ApiProperty()
+  roomId: string;
+  @ApiProperty()
+  password?: string | null;
+  @ApiProperty()
+  userId: number;
 }
 
 export class editRoomDto {

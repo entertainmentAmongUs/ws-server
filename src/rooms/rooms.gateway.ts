@@ -16,7 +16,7 @@ import {
   chatDto,
   createRoomDto,
   editRoomDto,
-  RoomDto,
+  joinRoomDto,
   RoomInfoDto,
 } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
@@ -114,17 +114,47 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   joinRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: { roomId: RoomDto['roomId'] }
+    @MessageBody() data: joinRoomDto
   ) {
     const room = this.roomsService.findById(data.roomId);
     const user = {
       ...this.roomsService.findUserById(socket.id),
       isReady: false,
     };
+
+    // 방정보가 없을 때
+    if (!room) {
+      this.server.to(socket.id).emit('joinRoom', { status: 'UN_EXIST' });
+      return;
+    }
+
+    // 패스워드가 다를 때
+    if (room.password && room.password !== data.password) {
+      this.server
+        .to(socket.id)
+        .emit('joinRoom', { status: 'PASSWORD_INCORRECT' });
+      return;
+    }
+
+    // 유저가 꽉 찼을 때
+    if (room.maxUser === room.users.length) {
+      this.server.to(socket.id).emit('joinRoom', { status: 'FULL_USER' });
+      return;
+    }
+
+    // 유저가 모두 레디해서 시작했을 때
+    if (room.users.every((user) => user.isReady === true)) {
+      this.server.to(socket.id).emit('joinRoom', { status: 'ALREADY_STARTED' });
+      return;
+    }
+
     this.server.socketsJoin(data.roomId);
     const updatedRoom = this.roomsService.join(room.roomId, user);
 
-    this.server.to(room.roomId).emit('userList', updatedRoom.users);
+    this.server.to(socket.id).emit('joinRoom', { status: 'SUCCESS' });
+    this.server
+      .to(room.roomId)
+      .emit('roomInfo', this.roomsService.transferRoomInfoData(updatedRoom));
   }
 
   @SubscribeMessage('roomList')
@@ -140,18 +170,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     const roomInfo = this.roomsService.findById(data.roomId);
 
-    const sendRoomInfo = {
-      ...roomInfo,
-      users: roomInfo.users.map((user) => {
-        return {
-          userId: user.userId,
-          nickName: user.nickName,
-          isReady: user.isReady,
-        };
-      }),
-    };
-
-    this.server.to(socket.id).emit('roomInfo', sendRoomInfo);
+    this.server
+      .to(socket.id)
+      .emit('roomInfo', this.roomsService.transferRoomInfoData(roomInfo));
   }
 
   @SubscribeMessage('getReady')

@@ -161,6 +161,19 @@ export class RoomsService {
       room.users.some((x) => x.socketId === socketId)
     );
   }
+
+  transferRoomInfoData(room: Room) {
+    return {
+      ...room,
+      users: room.users.map((user) => {
+        return {
+          userId: user.userId,
+          nickName: user.nickName,
+          isReady: user.isReady,
+        };
+      }),
+    };
+  }
 }
 
 // TODO: user와 room service 폴더 나누기
