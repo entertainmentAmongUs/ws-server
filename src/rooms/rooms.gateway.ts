@@ -10,12 +10,14 @@ import {
 } from '@nestjs/websockets';
 import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
+import { 라이어게임_제시어 } from 'src/constant/subject';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
 import { ChatDto } from './dtos/chat.dto';
 import {
   chatDto,
   createRoomDto,
   editRoomDto,
+  getReadyDto,
   joinRoomDto,
   RoomInfoDto,
 } from './dtos/room.dto';
@@ -178,13 +180,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('getReady')
   getReady(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: UserDto['userId']
+    @MessageBody() data: getReadyDto
   ) {
-    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
-
     const roomInfo = this.roomsService.updateUserReadyStatus(
-      roomIndex,
-      socket.id
+      data.roomId,
+      data.userId
     );
 
     this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
@@ -196,10 +196,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           return i;
         });
 
+      const rand = Math.floor(Math.random() * 라이어게임_제시어.length);
+
       this.server.to(roomInfo.roomId).emit('startGame', {
-        keyword: '닭꼬치',
+        keyword: 라이어게임_제시어[rand],
         time: '180',
-        order,
+        order: shuffleArray(order),
         liarNumber: 0,
       });
     }

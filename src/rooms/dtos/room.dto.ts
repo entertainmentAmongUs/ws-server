@@ -69,3 +69,10 @@ export class chatDto {
   @ApiProperty()
   message: string;
 }
+
+export class getReadyDto {
+  @ApiProperty()
+  roomId: string;
+  @ApiProperty()
+  userId: number;
+}

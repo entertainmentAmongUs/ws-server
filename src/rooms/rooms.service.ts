@@ -138,9 +138,13 @@ export class RoomsService {
     return rooms;
   }
 
-  updateUserReadyStatus(roomIndex: number, userId: RoomInUser['socketId']) {
-    this.rooms[roomIndex].users = this.rooms[roomIndex].users.map((x) => {
-      if (x.socketId === userId) {
+  updateUserReadyStatus(roomId: Room['roomId'], userId: RoomInUser['userId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+
+    this.rooms.find((room) => room.roomId).users = this.rooms[
+      roomIndex
+    ].users.map((x) => {
+      if (x.userId === userId) {
         return { ...x, ready: !x.isReady };
       }
 
