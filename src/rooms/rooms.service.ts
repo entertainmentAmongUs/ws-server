@@ -178,6 +178,32 @@ export class RoomsService {
       }),
     };
   }
+
+  leaveRoom(roomId: Room['roomId'], userId: RoomInUser['userId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+
+    this.rooms[roomIndex].users = this.rooms[roomIndex].users.filter(
+      (user) => user.userId !== userId
+    );
+
+    // 방에서 사람이 다 나가면 방 삭제
+    if (this.rooms[roomIndex].users.length === 0) {
+      this.rooms.splice(roomIndex, 1);
+    }
+
+    // 방에서 나간 사람이 호스트라면 다음 사람에게 호스트를 넘김
+    if (this.rooms[roomIndex].hostId === userId) {
+      this.rooms[roomIndex].hostId = this.rooms[roomIndex].users[0].userId;
+    }
+  }
+
+  kick(roomId: Room['roomId'], userId: RoomInUser['userId']) {
+    // 방에 있는 유저를 강퇴시킨다.
+    const roomIndex = this.findRoomIndex(roomId);
+    this.rooms[roomIndex].users = this.rooms[roomIndex].users.filter(
+      (user) => user.userId !== userId
+    );
+  }
 }
 
 // TODO: user와 room service 폴더 나누기

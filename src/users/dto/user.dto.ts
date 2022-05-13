@@ -1,4 +1,5 @@
-import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { RoomDto } from 'src/rooms/dtos/room.dto';
 
 export class User {
   @ApiProperty()
@@ -11,4 +12,7 @@ export class User {
 
 export class UserDto extends OmitType(User, ['socketId']) {}
 
-export class KickDto extends PickType(UserDto, ['userId']) {}
+export class KickDto {
+  roomId: RoomDto['roomId'];
+  userId: User['userId'];
+}

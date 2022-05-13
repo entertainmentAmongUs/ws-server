@@ -19,6 +19,7 @@ import {
   editRoomDto,
   getReadyDto,
   joinRoomDto,
+  leaveRoomDto,
   RoomInfoDto,
 } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
@@ -208,35 +209,25 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leaveRoom')
-  leaveRoom(@ConnectedSocket() socket: Socket, @MessageBody() data) {
-    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
-    const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
+  leaveRoom(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: leaveRoomDto
+  ) {
+    this.server.socketsLeave(data.roomId);
+    this.roomsService.leaveRoom(data.roomId, data.userId);
 
-    this.server.socketsLeave(roomInfo.roomId);
-    if (
-      roomInfo.users.findIndex((user) => user.socketId === socket.id) === 0 &&
-      roomInfo.users.length > 1
-    ) {
-      // roomInfo.users[1].isHost = true;
-    }
-
-    roomInfo.users.filter((user) => user.socketId !== socket.id);
-    this.roomsService.updateRoomInfo(roomIndex, roomInfo);
-
-    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
+    const roomInfo = this.roomsService.findById(data.roomId);
+    this.server.to(data.roomId).emit('roomInfo', roomInfo);
   }
 
   @SubscribeMessage('kick')
   kick(@ConnectedSocket() socket: Socket, @MessageBody() data: KickDto) {
-    const roomIndex = this.roomsService.findByUserSocketId(socket.id);
-    const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
+    this.server.socketsLeave(data.roomId);
+    this.roomsService.kick(data.roomId, data.userId);
 
-    this.server.socketsLeave(roomInfo.roomId);
-    roomInfo.users.filter((user) => user.userId !== data.userId);
-    this.roomsService.updateRoomInfo(roomIndex, roomInfo);
-
-    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
-    this.server.to(roomInfo.roomId).emit('exile', data.userId);
+    const roomInfo = this.roomsService.findById(data.roomId);
+    this.server.to(data.roomId).emit('roomInfo', roomInfo);
+    this.server.to(data.roomId).emit('kick', { userId: data.userId });
   }
 
   @SubscribeMessage('editRoom')

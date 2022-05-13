@@ -50,6 +50,13 @@ export class joinRoomDto {
   userId: number;
 }
 
+export class leaveRoomDto {
+  @ApiProperty()
+  roomId: string;
+  @ApiProperty()
+  userId: number;
+}
+
 export class editRoomDto {
   @ApiProperty()
   id: string;
