@@ -73,6 +73,7 @@ describe('로비 테스트', () => {
             users: expect.any(Object),
             gameType: expect.any(String),
             subject: expect.any(String),
+            status: expect.any(String),
           },
         ]),
       });

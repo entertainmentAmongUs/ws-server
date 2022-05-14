@@ -212,7 +212,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const rand = Math.floor(
         Math.random() * 라이어게임_제시어[roomInfo.subject].length
       );
-
+      this.roomsService.startRoom(roomInfo.roomId);
       this.server.to(roomInfo.roomId).emit('startGame', {
         keyword: 라이어게임_제시어[roomInfo.subject][rand],
         time: '180',

@@ -20,6 +20,8 @@ export class RoomDto {
   subject: Room['subject'];
   @ApiProperty()
   hostId: Room['hostId'];
+  @ApiProperty()
+  status: Room['status'];
 }
 
 export class RoomListDto {

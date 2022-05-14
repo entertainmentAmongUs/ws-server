@@ -11,6 +11,7 @@ export interface Room {
   gameType: 'LIAR' | 'IMAGE';
   subject: 라이어게임_주제_타입;
   hostId: number;
+  status: 'WAITING' | 'PLAYING';
 }
 export interface Lobby {
   roomId: 'LOBBY';

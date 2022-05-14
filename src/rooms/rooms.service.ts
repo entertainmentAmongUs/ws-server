@@ -68,6 +68,7 @@ export class RoomsService {
       maxUser: Number(room.maxUser),
       roomId: uuidv4(),
       hostId: null,
+      status: 'WAITING' as const,
     };
     this.rooms.push(roomObject);
 
@@ -189,6 +190,12 @@ export class RoomsService {
     this.rooms[roomIndex].users = this.rooms[roomIndex].users.filter(
       (user) => user.userId !== userId
     );
+  }
+
+  startRoom(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+
+    this.rooms[roomIndex].status = 'PLAYING' as const;
   }
 }
 
