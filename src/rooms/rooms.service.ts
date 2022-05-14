@@ -24,7 +24,7 @@ export class RoomsService {
     return this.users;
   }
 
-  findUserById(socketId: User['socketId']) {
+  findUserBySocketId(socketId: User['socketId']) {
     return this.users.find((user) => user.socketId === socketId);
   }
 

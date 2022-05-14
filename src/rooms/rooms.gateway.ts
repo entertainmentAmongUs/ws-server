@@ -110,7 +110,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const newRoom = this.roomsService.create(roomInfo);
 
     const user = {
-      ...this.roomsService.findUserById(socket.id),
+      ...this.roomsService.findUserBySocketId(socket.id),
       isReady: false,
     };
     this.server.socketsJoin(newRoom.roomId);
@@ -126,7 +126,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   ) {
     const room = this.roomsService.findById(data.roomId);
     const user = {
-      ...this.roomsService.findUserById(socket.id),
+      ...this.roomsService.findUserBySocketId(socket.id),
       isReady: false,
     };
 
@@ -272,7 +272,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   @SubscribeMessage('chatMessage')
   chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: chatDto) {
-    const user = this.roomsService.findUserById(socket.id);
+    const user = this.roomsService.findUserBySocketId(socket.id);
 
     this.server.to(data.roomId).emit('newChatMessage', {
       nickName: user.nickName,
