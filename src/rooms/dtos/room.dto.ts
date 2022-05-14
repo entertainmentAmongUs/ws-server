@@ -72,7 +72,7 @@ export class EditRoomDto {
   maxUser: Room['maxUser'];
   @IsString()
   title: Room['title'];
-  @IsString()
+  @IsOptional()
   password: Room['password'];
   @IsString()
   subject: Room['subject'];
