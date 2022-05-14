@@ -204,6 +204,10 @@ export class RoomsService {
 
     this.rooms[roomIndex].status = 'PLAYING' as const;
   }
+
+  deleteRoom(roomIndex: number) {
+    this.rooms.splice(roomIndex, 1);
+  }
 }
 
 // TODO: user와 room service 폴더 나누기

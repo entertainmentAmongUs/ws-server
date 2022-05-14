@@ -62,6 +62,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
       const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
       this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
+
+      if (roomInfo.users.length === 0) {
+        this.roomsService.deleteRoom(roomIndex);
+      }
     }
 
     if (this.roomsService.isExistUserData(client.id)) {
