@@ -18,6 +18,8 @@ export class RoomDto {
   gameType: Room['gameType'];
   @ApiProperty()
   subject: Room['subject'];
+  @ApiProperty()
+  hostId: Room['hostId'];
 }
 
 export class RoomListDto {

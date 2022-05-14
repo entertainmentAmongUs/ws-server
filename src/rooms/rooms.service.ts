@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { createRoomDto, RoomDto } from './dtos/room.dto';
+import { createRoomDto } from './dtos/room.dto';
 import { Lobby, Room } from './interfaces/room.interface';
 
 export const 로비: Lobby = {
@@ -121,21 +121,7 @@ export class RoomsService {
   }
 
   findAll() {
-    const rooms: RoomDto[] = this.rooms
-      .filter((room) => room.roomId !== 로비.roomId)
-      .map((room) => {
-        return {
-          roomId: room.roomId,
-          maxUser: room.maxUser,
-          title: room.title,
-          password: room.password,
-          users: room.users,
-          gameType: room.gameType,
-          subject: room.subject,
-        };
-      });
-
-    return rooms;
+    return this.rooms;
   }
 
   updateUserReadyStatus(roomId: Room['roomId'], userId: RoomInUser['userId']) {

@@ -209,10 +209,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           return i;
         });
 
-      const rand = Math.floor(Math.random() * 라이어게임_제시어.length);
+      const rand = Math.floor(
+        Math.random() * 라이어게임_제시어[roomInfo.subject].length
+      );
 
       this.server.to(roomInfo.roomId).emit('startGame', {
-        keyword: 라이어게임_제시어[rand],
+        keyword: 라이어게임_제시어[roomInfo.subject][rand],
         time: '180',
         order: shuffleArray(order),
         liarNumber: 0,
