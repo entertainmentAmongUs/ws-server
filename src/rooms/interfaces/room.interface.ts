@@ -6,7 +6,7 @@ export interface Room {
   roomId: string;
   maxUser: number;
   title: string;
-  password: string | null;
+  password?: string | null;
   users: RoomInUser[];
   gameType: 'LIAR' | 'IMAGE';
   subject: 라이어게임_주제_타입;

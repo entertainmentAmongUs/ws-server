@@ -37,8 +37,8 @@ export class RoomInfoDto {
 export class CreateRoomDto {
   @IsString()
   title: Room['title'];
-  @IsString()
-  password: Room['password'];
+  @IsOptional()
+  password?: Room['password'];
   @IsString()
   gameType: Room['gameType'];
   @IsString()

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { connect, Socket } from 'socket.io-client';
-import { createRoomInfo, TEST_URL, user1Info } from './e2e.mocking';
+import { createRoomInfo, TEST_URL, user1Info, user2Info } from './e2e.mocking';
 import { createNestApp } from './ws-server.e2e-spec';
 
 describe('대기방 테스트', () => {
@@ -34,6 +34,28 @@ describe('대기방 테스트', () => {
 
   it('2. 방에 있는 유저가 방에서 disconnect하면 방에 있는 유저들에게 유저리스트를 보내준다.', (done) => {
     done();
+  });
+
+  it('3. 방에 있는 유저 중 한명이 나가면 남은 사람에게 갱신된 방정보를 보내준다.', (done) => {
+    let roomId;
+    user1.emit('joinLobby', user1Info);
+    user2.emit('joinLobby', user2Info);
+
+    user1.emit('createRoom', createRoomInfo);
+    user2.emit('roomList');
+
+    user2.on('roomList', (data) => {
+      console.log(data);
+      roomId = data.roomList[0].roomId;
+      console.log(roomId);
+      user2.emit('joinRoom', { roomId: roomId, userId: user2Info.userId });
+      user1.emit('leaveRoom', { roomId, userId: user1Info.userId });
+    });
+
+    user2.on('roomInfo', (data) => {
+      console.log(data);
+      done();
+    });
   });
 
   afterEach(() => {
