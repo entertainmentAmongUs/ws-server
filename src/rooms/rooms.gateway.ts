@@ -298,6 +298,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomIndex,
       newRoomInfo
     );
+    this.server.to(socket.id).emit('editRoom', { status: 'SUCCESS' });
     this.server
       .to(roomInfo.roomId)
       .emit(
