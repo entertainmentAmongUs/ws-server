@@ -251,7 +251,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     const roomInfo = this.roomsService.findById(data.roomId);
     if (roomInfo) {
-      this.server.to(roomInfo.roomId).emit('roomInfo', roomInfo);
+      this.server
+        .to(roomInfo.roomId)
+        .emit('roomInfo', this.roomsService.transferRoomInfoData(roomInfo));
     }
   }
 
@@ -267,7 +269,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.in(kickUserSocketId).socketsLeave(data.roomId);
 
     const roomInfo = this.roomsService.findById(data.roomId);
-    this.server.to(data.roomId).emit('roomInfo', roomInfo);
+    this.server
+      .to(data.roomId)
+      .emit('roomInfo', this.roomsService.transferRoomInfoData(roomInfo));
   }
 
   @UsePipes(new WSValidationPipe())
@@ -294,7 +298,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomIndex,
       newRoomInfo
     );
-    this.server.to(roomInfo.roomId).emit('roomInfo', updatedRoomInfo);
+    this.server
+      .to(roomInfo.roomId)
+      .emit(
+        'roomInfo',
+        this.roomsService.transferRoomInfoData(updatedRoomInfo)
+      );
   }
 
   @UsePipes(new WSValidationPipe())
