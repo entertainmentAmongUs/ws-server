@@ -72,7 +72,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @UsePipes(new WSValidationPipe())
   @SubscribeMessage('joinLobby')
   joinLobby(@ConnectedSocket() socket: Socket, @MessageBody() data: UserDto) {
-    this.server.socketsJoin(로비.roomId);
+    this.server.in(socket.id).socketsJoin(로비.roomId);
 
     const newUser = {
       socketId: socket.id,
@@ -118,7 +118,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       ...this.roomsService.findUserBySocketId(socket.id),
       isReady: false,
     };
-    this.server.socketsJoin(newRoom.roomId);
+    this.server.in(socket.id).socketsJoin(newRoom.roomId);
     this.roomsService.join(newRoom.roomId, user);
 
     this.server.to(socket.id).emit('createRoom', { roomId: newRoom.roomId });
@@ -162,7 +162,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       return;
     }
 
-    this.server.socketsJoin(data.roomId);
+    this.server.in(socket.id).socketsJoin(data.roomId);
     const updatedRoom = this.roomsService.join(room.roomId, user);
 
     this.server.to(socket.id).emit('joinRoom', { status: 'SUCCESS' });
@@ -247,7 +247,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @UsePipes(new WSValidationPipe())
   @SubscribeMessage('kick')
   kick(@ConnectedSocket() socket: Socket, @MessageBody() data: KickDto) {
-    this.server.socketsLeave(data.roomId);
+    const kickUserSocketId = this.roomsService.findUserByUserId(
+      data.userId
+    ).socketId;
+    this.server.in(kickUserSocketId).socketsLeave(data.roomId);
     this.roomsService.kick(data.roomId, data.userId);
 
     const roomInfo = this.roomsService.findById(data.roomId);

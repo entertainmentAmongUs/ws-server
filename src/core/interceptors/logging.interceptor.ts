@@ -2,23 +2,26 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
+  private logger: Logger = new Logger(LoggingInterceptor.name);
+
   intercept(
     context: ExecutionContext,
     next: CallHandler<any>
   ): Observable<any> {
-    console.log('Before...');
-    console.log(context.getClass());
-    console.log(context.getHandler());
+    this.logger.log('Before...');
+    this.logger.log(context.getClass());
+    this.logger.log(context.getHandler());
 
     const now = Date.now();
     return next
       .handle()
-      .pipe(tap(() => console.log(`After... ${Date.now() - now}ms`)));
+      .pipe(tap(() => this.logger.log(`After... ${Date.now() - now}ms`)));
   }
 }

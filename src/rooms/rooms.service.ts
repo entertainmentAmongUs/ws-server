@@ -28,6 +28,10 @@ export class RoomsService {
     return this.users.find((user) => user.socketId === socketId);
   }
 
+  findUserByUserId(userId: RoomInUser['userId']) {
+    return this.users.find((user) => user.userId === userId);
+  }
+
   // 로비
   joinLobby(user: User) {
     this.lobby.users = [...this.lobby.users, user];
