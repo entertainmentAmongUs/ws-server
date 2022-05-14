@@ -258,12 +258,13 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     const kickUserSocketId = this.roomsService.findUserByUserId(
       data.userId
     ).socketId;
-    this.server.in(kickUserSocketId).socketsLeave(data.roomId);
+
+    this.server.to(data.roomId).emit('kick', { userId: data.userId });
     this.roomsService.kick(data.roomId, data.userId);
+    this.server.in(kickUserSocketId).socketsLeave(data.roomId);
 
     const roomInfo = this.roomsService.findById(data.roomId);
     this.server.to(data.roomId).emit('roomInfo', roomInfo);
-    this.server.to(data.roomId).emit('kick', { userId: data.userId });
   }
 
   @UsePipes(new WSValidationPipe())
