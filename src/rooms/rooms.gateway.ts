@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseInterceptors } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -11,6 +11,7 @@ import {
 import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { 라이어게임_제시어 } from 'src/constant/subject';
+import { LoggingInterceptor } from 'src/core/interceptors/logging.interceptor';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
 import { ChatDto } from './dtos/chat.dto';
 import {
@@ -25,6 +26,7 @@ import {
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
+@UseInterceptors(new LoggingInterceptor())
 @WebSocketGateway({
   cors: { origin: '*' },
   allowEIO3: true,

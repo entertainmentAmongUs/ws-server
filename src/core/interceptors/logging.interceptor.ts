@@ -10,9 +10,11 @@ import { Observable, tap } from 'rxjs';
 export class LoggingInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
-    next: CallHandler<any>,
+    next: CallHandler<any>
   ): Observable<any> {
     console.log('Before...');
+    console.log(context.getClass());
+    console.log(context.getHandler());
 
     const now = Date.now();
     return next
