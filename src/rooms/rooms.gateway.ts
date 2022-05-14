@@ -208,8 +208,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       data.roomId,
       data.userId
     );
+    const filterUserList = roomInfo.users.map(({ socketId, ...user }) => {
+      return user;
+    });
 
-    this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
+    this.server.to(roomInfo.roomId).emit('userList', filterUserList);
 
     if (
       roomInfo.users.length >= 3 &&

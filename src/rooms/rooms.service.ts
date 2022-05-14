@@ -136,7 +136,7 @@ export class RoomsService {
       roomIndex
     ].users.map((x) => {
       if (x.userId === userId) {
-        return { ...x, ready: !x.isReady };
+        return { ...x, isReady: !x.isReady };
       }
 
       return x;
