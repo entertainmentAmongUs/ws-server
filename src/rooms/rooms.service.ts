@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { createRoomDto } from './dtos/room.dto';
+import { CreateRoomDto } from './dtos/room.dto';
 import { Lobby, Room } from './interfaces/room.interface';
 
 export const 로비: Lobby = {
@@ -61,7 +61,7 @@ export class RoomsService {
   }
 
   // 방
-  create(room: Omit<createRoomDto, 'userId'>) {
+  create(room: Omit<CreateRoomDto, 'userId'>) {
     const roomObject = {
       ...room,
       users: [],
