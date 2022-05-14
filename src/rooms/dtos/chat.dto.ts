@@ -1,5 +1,9 @@
+import { IsString } from 'class-validator';
+import { Room } from '../interfaces/room.interface';
+
 export class ChatDto {
-  roomId: string;
-  nickName: string;
+  @IsString()
+  roomId: Room['roomId'];
+  @IsString()
   message: string;
 }

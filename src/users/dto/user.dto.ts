@@ -1,18 +1,16 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { IsNumber, IsString } from 'class-validator';
 import { RoomDto } from 'src/rooms/dtos/room.dto';
 
-export class User {
-  @ApiProperty()
-  readonly socketId: string;
-  @ApiProperty()
-  readonly userId: number;
-  @ApiProperty()
-  readonly nickName: string;
+export class UserDto {
+  @IsNumber()
+  userId: number;
+  @IsString()
+  nickName: string;
 }
 
-export class UserDto extends OmitType(User, ['socketId']) {}
-
 export class KickDto {
+  @IsString()
   roomId: RoomDto['roomId'];
-  userId: User['userId'];
+  @IsNumber()
+  userId: UserDto['userId'];
 }

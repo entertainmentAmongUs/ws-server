@@ -1,4 +1,4 @@
-import { Logger, UseInterceptors } from '@nestjs/common';
+import { Logger, UseInterceptors, UsePipes } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,15 +12,15 @@ import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
 import { 라이어게임_제시어 } from 'src/constant/subject';
 import { LoggingInterceptor } from 'src/core/interceptors/logging.interceptor';
+import { WSValidationPipe } from 'src/pipe/ws-validation-pipe';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
 import { ChatDto } from './dtos/chat.dto';
 import {
-  chatDto,
-  createRoomDto,
-  editRoomDto,
-  getReadyDto,
-  joinRoomDto,
-  leaveRoomDto,
+  CreateRoomDto,
+  EditRoomDto,
+  GetReadyDto,
+  JoinRoomDto,
+  LeaveRoomDto,
   RoomInfoDto,
 } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
@@ -69,6 +69,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('joinLobby')
   joinLobby(@ConnectedSocket() socket: Socket, @MessageBody() data: UserDto) {
     this.server.socketsJoin(로비.roomId);
@@ -94,6 +95,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(로비.roomId).emit('roomList', { roomList });
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('chat')
   lobbyChat(
     @ConnectedSocket() socket: Socket,
@@ -103,10 +105,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(data.roomId).emit('chat', data);
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('createRoom')
   createRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: createRoomDto
+    @MessageBody() data: CreateRoomDto
   ) {
     const { userId, ...roomInfo } = data;
     const newRoom = this.roomsService.create(roomInfo);
@@ -121,10 +124,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(socket.id).emit('createRoom', { roomId: newRoom.roomId });
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('joinRoom')
   joinRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: joinRoomDto
+    @MessageBody() data: JoinRoomDto
   ) {
     const room = this.roomsService.findById(data.roomId);
     const user = {
@@ -167,6 +171,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       .emit('roomInfo', this.roomsService.transferRoomInfoData(updatedRoom));
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('roomList')
   roomList(@ConnectedSocket() socket: Socket) {
     const roomList = this.roomsService.findAll().map((room) => {
@@ -180,6 +185,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(socket.id).emit('roomList', { roomList });
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('roomInfo')
   roomInfo(
     @ConnectedSocket() socket: Socket,
@@ -192,10 +198,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       .emit('roomInfo', this.roomsService.transferRoomInfoData(roomInfo));
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('getReady')
   getReady(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: getReadyDto
+    @MessageBody() data: GetReadyDto
   ) {
     const roomInfo = this.roomsService.updateUserReadyStatus(
       data.roomId,
@@ -224,10 +231,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('leaveRoom')
   leaveRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: leaveRoomDto
+    @MessageBody() data: LeaveRoomDto
   ) {
     this.server.socketsLeave(data.roomId);
     this.roomsService.leaveRoom(data.roomId, data.userId);
@@ -236,6 +244,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(data.roomId).emit('roomInfo', roomInfo);
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('kick')
   kick(@ConnectedSocket() socket: Socket, @MessageBody() data: KickDto) {
     this.server.socketsLeave(data.roomId);
@@ -246,10 +255,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(data.roomId).emit('kick', { userId: data.userId });
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('editRoom')
   editRoom(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() data: editRoomDto
+    @MessageBody() data: EditRoomDto
   ) {
     const roomInfo = this.roomsService.findById(data.roomId);
     const roomIndex = this.roomsService.findRoomIndex(data.roomId);
@@ -272,8 +282,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(roomInfo.roomId).emit('roomInfo', updatedRoomInfo);
   }
 
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('chatMessage')
-  chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: chatDto) {
+  chatMessage(@ConnectedSocket() socket: Socket, @MessageBody() data: ChatDto) {
     const user = this.roomsService.findUserBySocketId(socket.id);
 
     this.server.to(data.roomId).emit('newChatMessage', {

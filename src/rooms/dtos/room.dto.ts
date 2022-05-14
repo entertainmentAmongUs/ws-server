@@ -1,93 +1,88 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { Room } from '../interfaces/room.interface';
 
 export class RoomDto {
-  @ApiProperty()
+  @IsString()
   roomId: Room['roomId'];
-  @ApiProperty()
+  @IsNumber()
   maxUser: Room['maxUser'];
-  @ApiProperty()
+  @IsString()
   title: Room['title'];
-  @ApiProperty()
+  @IsString()
   password: Room['password'];
-  @ApiProperty()
+  @IsArray()
   users: RoomInUser[];
-  @ApiProperty()
+  @IsString()
   gameType: Room['gameType'];
-  @ApiProperty()
+  @IsString()
   subject: Room['subject'];
-  @ApiProperty()
+  @IsNumber()
   hostId: Room['hostId'];
-  @ApiProperty()
+  @IsString()
   status: Room['status'];
 }
 
 export class RoomListDto {
+  @IsArray()
   roomList: RoomDto[];
 }
 
 export class RoomInfoDto {
+  @IsString()
   roomId: Room['roomId'];
 }
 
-export class createRoomDto {
-  @ApiProperty()
+export class CreateRoomDto {
+  @IsString()
   title: Room['title'];
-  @ApiProperty()
+  @IsString()
   password: Room['password'];
-  @ApiProperty()
+  @IsString()
   gameType: Room['gameType'];
-  @ApiProperty()
+  @IsString()
   subject: Room['subject'];
-  @ApiProperty()
+  @IsNumber()
   maxUser: Room['maxUser'];
-  @ApiProperty()
+  @IsNumber()
   userId: User['userId'];
 }
 
-export class joinRoomDto {
-  @ApiProperty()
+export class JoinRoomDto {
+  @IsString()
   roomId: Room['roomId'];
-  @ApiProperty()
+  @IsString()
   password?: Room['password'];
-  @ApiProperty()
+  @IsNumber()
   userId: User['userId'];
 }
 
-export class leaveRoomDto {
-  @ApiProperty()
+export class LeaveRoomDto {
+  @IsString()
   roomId: Room['roomId'];
-  @ApiProperty()
+  @IsNumber()
   userId: User['userId'];
 }
 
-export class editRoomDto {
-  @ApiProperty()
+export class EditRoomDto {
+  @IsString()
   roomId: Room['roomId'];
-  @ApiProperty()
+  @IsNumber()
   maxUser: Room['maxUser'];
-  @ApiProperty()
+  @IsString()
   title: Room['title'];
-  @ApiProperty()
+  @IsString()
   password: Room['password'];
-  @ApiProperty()
+  @IsString()
   subject: Room['subject'];
-  @ApiProperty()
+  @IsString()
   gameType: Room['gameType'];
 }
 
-export class chatDto {
-  @ApiProperty()
+export class GetReadyDto {
+  @IsString()
   roomId: Room['roomId'];
-  @ApiProperty()
-  message: string;
-}
-
-export class getReadyDto {
-  @ApiProperty()
-  roomId: Room['roomId'];
-  @ApiProperty()
+  @IsNumber()
   userId: User['userId'];
 }
