@@ -241,7 +241,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.roomsService.leaveRoom(data.roomId, data.userId);
 
     const roomInfo = this.roomsService.findById(data.roomId);
-    this.server.to(roomInfo.roomId).emit('roomInfo', roomInfo);
+    if (roomInfo) {
+      this.server.to(roomInfo.roomId).emit('roomInfo', roomInfo);
+    }
   }
 
   @UsePipes(new WSValidationPipe())
