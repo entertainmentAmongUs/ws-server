@@ -298,6 +298,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.server.to(data.roomId).emit('newChatMessage', {
       nickName: user.nickName,
       message: data.message,
+      roomId: data.roomId,
     });
   }
 }
