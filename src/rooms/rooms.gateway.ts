@@ -211,7 +211,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
 
-    if (roomInfo.users.every((user) => user.isReady)) {
+    if (
+      roomInfo.users.length >= 3 &&
+      roomInfo.users.every((user) => user.isReady)
+    ) {
       const order = Array()
         .fill(roomInfo.users.length)
         .map((_, i) => {
