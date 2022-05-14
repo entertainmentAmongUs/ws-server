@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { Room } from '../interfaces/room.interface';
@@ -52,7 +52,7 @@ export class CreateRoomDto {
 export class JoinRoomDto {
   @IsString()
   roomId: Room['roomId'];
-  @IsString()
+  @IsOptional()
   password?: Room['password'];
   @IsNumber()
   userId: User['userId'];
