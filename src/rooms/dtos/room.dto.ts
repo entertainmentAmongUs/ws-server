@@ -1,4 +1,5 @@
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { 라이어게임_주제 } from 'src/constant/subject';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
 import { Room } from '../interfaces/room.interface';
@@ -16,7 +17,7 @@ export class RoomDto {
   users: RoomInUser[];
   @IsString()
   gameType: Room['gameType'];
-  @IsString()
+  @IsIn(라이어게임_주제)
   subject: Room['subject'];
   @IsNumber()
   hostId: Room['hostId'];
@@ -41,7 +42,7 @@ export class CreateRoomDto {
   password?: Room['password'];
   @IsString()
   gameType: Room['gameType'];
-  @IsString()
+  @IsIn(라이어게임_주제)
   subject: Room['subject'];
   @IsNumber()
   maxUser: Room['maxUser'];
@@ -74,7 +75,7 @@ export class EditRoomDto {
   title: Room['title'];
   @IsOptional()
   password: Room['password'];
-  @IsString()
+  @IsIn(라이어게임_주제)
   subject: Room['subject'];
   @IsString()
   gameType: Room['gameType'];
