@@ -14,6 +14,7 @@ import { 라이어게임_제시어 } from 'src/constant/subject';
 import { LoggingInterceptor } from 'src/core/interceptors/logging.interceptor';
 import { WSValidationPipe } from 'src/pipe/ws-validation-pipe';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
+import { shuffleArray } from 'src/utils/shuffleArray';
 import { ChatDto } from './dtos/chat.dto';
 import {
   CreateRoomDto,
