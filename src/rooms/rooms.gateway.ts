@@ -80,7 +80,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.roomsService.createUser(newUser);
     this.roomsService.joinLobby(newUser);
 
-    const lobbyUserList = this.roomsService.findLobby().users;
+    const lobbyUserList = this.roomsService.findLobby().users.map((user) => {
+      return {
+        userId: user.userId,
+        nickName: user.nickName,
+      };
+    });
     this.server.to(로비.roomId).emit('lobbyUserList', { users: lobbyUserList });
 
     const roomList = this.roomsService.findAll();
@@ -162,7 +167,14 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   @SubscribeMessage('roomList')
   roomList(@ConnectedSocket() socket: Socket) {
-    const roomList = this.roomsService.findAll();
+    const roomList = this.roomsService.findAll().map((room) => {
+      return {
+        ...room,
+        users: room.users.map(({ socketId, ...user }) => {
+          return user;
+        }),
+      };
+    });
     this.server.to(socket.id).emit('roomList', { roomList });
   }
 
