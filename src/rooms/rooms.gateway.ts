@@ -328,6 +328,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const roomInfo = this.roomsService.findById(data.roomId);
       const userCount = roomInfo.users.length;
       const gameInfo = this.roomsService.getGameInfo(data.roomId);
+      // TODO : 자유채팅시간 2분
+      // TODO : 투표시간 30초
 
       let i = 0;
 
@@ -335,12 +337,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let leaveTime = userPerTime;
 
       let timerId = setInterval(() => {
-        i += 1;
         this.server.to(roomInfo.roomId).emit('time', {
-          order: gameInfo.order[Math.floor(i / 30)],
+          order: gameInfo.order[Math.floor(i / userPerTime)],
           time: leaveTime,
         });
 
+        i += 1;
         leaveTime -= 1;
         if (leaveTime === 0) {
           leaveTime = userPerTime;
