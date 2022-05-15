@@ -226,6 +226,11 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomInfo.users.length >= 3 &&
       roomInfo.users.every((user) => user.isReady)
     ) {
+      const random = Math.floor(Math.random() * roomInfo.users.length);
+      const userArray = roomInfo.users.map((user) => {
+        return user.userId;
+      });
+
       const order = Array(roomInfo.users.length)
         .fill(0)
         .map((x, i) => {
@@ -242,7 +247,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         keyword: 라이어게임_제시어[roomInfo.subject][rand],
         time: '180',
         order: orderArray,
-        liarNumber: 0,
+        liarNumber: userArray[random],
       });
 
       const userCount = roomInfo.users.length;
