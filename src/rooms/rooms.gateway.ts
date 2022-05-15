@@ -328,28 +328,17 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const roomInfo = this.roomsService.findById(data.roomId);
       const userCount = roomInfo.users.length;
       const gameInfo = this.roomsService.getGameInfo(data.roomId);
-      // TODO : 자유채팅시간 2분
-      // TODO : 투표시간 30초
-
-      let time = 0;
-
       const userPerTime = 30;
+      const oneSecond = 1000;
       let leaveTime = userPerTime;
+      let time = 0;
       let status = 'HINT';
 
       let timerId = setInterval(() => {
-        if (time > hintTime) {
-          status = 'VOTE';
-          leaveTime = hintTime;
-        } else if (time > hintTime + voteTime) {
-          status = 'FREE_CHAT';
-          leaveTime = voteTime;
-        }
-
         this.server.to(roomInfo.roomId).emit('time', {
           order:
             status === 'HINT'
-              ? gameInfo.order[Math.floor(time / userPerTime)]
+              ? gameInfo.order[Math.floor(time / (userPerTime + 1))]
               : -1,
           time: leaveTime,
           status,
@@ -357,18 +346,26 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
         time += 1;
         leaveTime -= 1;
-        if (leaveTime === 0) {
+        if (leaveTime === -1) {
           leaveTime = userPerTime;
         }
-      }, 1000);
 
-      const hintTime = 1000 * userPerTime * userCount;
-      const freeChatTime = 1000 * 60 * 2;
-      const voteTime = 1000 * 30;
+        if (time * oneSecond === hintTime) {
+          status = 'FREE_CHAT';
+          leaveTime = freeChatTime / oneSecond;
+        } else if (time * oneSecond === hintTime + freeChatTime + 1000) {
+          status = 'VOTE';
+          leaveTime = voteTime / oneSecond;
+        }
+      }, oneSecond);
+
+      const hintTime = oneSecond * (userPerTime + 1) * userCount;
+      const freeChatTime = oneSecond * 60 * 2;
+      const voteTime = oneSecond * 30;
 
       setTimeout(() => {
         clearInterval(timerId);
-      }, hintTime + freeChatTime + voteTime);
+      }, hintTime + freeChatTime + voteTime + oneSecond * 3);
     }
   }
 }
