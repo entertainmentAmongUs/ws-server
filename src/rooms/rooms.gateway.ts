@@ -226,8 +226,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomInfo.users.length >= 3 &&
       roomInfo.users.every((user) => user.isReady)
     ) {
-      const random = Math.floor(Math.random() * roomInfo.users.length);
-      const userArray = roomInfo.users.map((user) => {
+      const userRandomNumber = Math.floor(
+        Math.random() * roomInfo.users.length
+      );
+      const userIdArray = roomInfo.users.map((user) => {
         return user.userId;
       });
 
@@ -239,15 +241,14 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
       const orderArray = shuffleArray(order);
 
-      const rand = Math.floor(
+      const subjectRandomNumber = Math.floor(
         Math.random() * 라이어게임_제시어[roomInfo.subject].length
       );
       this.roomsService.startRoom(roomInfo.roomId);
       this.server.to(roomInfo.roomId).emit('startGame', {
-        keyword: 라이어게임_제시어[roomInfo.subject][rand],
-        time: '180',
+        keyword: 라이어게임_제시어[roomInfo.subject][subjectRandomNumber],
         order: orderArray,
-        liarNumber: userArray[random],
+        liarNumber: userIdArray[userRandomNumber],
       });
 
       const userCount = roomInfo.users.length;
