@@ -336,12 +336,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
       let timerId = setInterval(() => {
         i += 1;
-        leaveTime -= 1;
         this.server.to(roomInfo.roomId).emit('time', {
           order: gameInfo.order[Math.floor(i / 30)],
           time: leaveTime,
         });
 
+        leaveTime -= 1;
         if (leaveTime === 0) {
           leaveTime = userPerTime;
         }
