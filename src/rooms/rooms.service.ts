@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { 라이어게임_제시어 } from 'src/constant/subject';
 import { RoomInUser } from 'src/users/interfaces/roomInUser.interface';
 import { User } from 'src/users/interfaces/user.interface';
+import { shuffleArray } from 'src/utils/shuffleArray';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateRoomDto } from './dtos/room.dto';
+import { Game } from './interfaces/game.interface';
 import { Lobby, Room } from './interfaces/room.interface';
 
 export const 로비: Lobby = {
@@ -16,6 +19,7 @@ export class RoomsService {
   private readonly lobby: Lobby = 로비;
   private readonly rooms: Room[] = [];
   private readonly users: User[] = [];
+  private readonly games: Game[] = [];
   // private logger: Logger = new Logger('RoomsService');
 
   // 유저
@@ -199,7 +203,7 @@ export class RoomsService {
     );
   }
 
-  startRoom(roomId: Room['roomId']) {
+  roomStatusToStart(roomId: Room['roomId']) {
     const roomIndex = this.findRoomIndex(roomId);
 
     this.rooms[roomIndex].status = 'PLAYING' as const;
@@ -207,6 +211,89 @@ export class RoomsService {
 
   deleteRoom(roomIndex: number) {
     this.rooms.splice(roomIndex, 1);
+  }
+
+  // Game
+  createGame(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const room = this.rooms[roomIndex];
+
+    const order = this.setOrder(roomId);
+    const keyword = this.setKeyword(roomId);
+    const liar = this.setLiar(roomId);
+
+    const game: Game = {
+      roomId: room.roomId,
+      loadingEndNumber: 0,
+      order,
+      keyword,
+      liar,
+    };
+
+    this.games.push(game);
+
+    return game;
+  }
+
+  setKeyword(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const roomInfo = this.rooms[roomIndex];
+
+    const subjectRandomNumber = Math.floor(
+      Math.random() * 라이어게임_제시어[roomInfo.subject].length
+    );
+
+    return 라이어게임_제시어[roomInfo.subject][subjectRandomNumber];
+  }
+
+  setLiar(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const roomInfo = this.rooms[roomIndex];
+    const userRandomNumber = Math.floor(Math.random() * roomInfo.users.length);
+    const userIdArray = roomInfo.users.map((user) => {
+      return user.userId;
+    });
+
+    return userIdArray[userRandomNumber];
+  }
+
+  setOrder(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const roomInfo = this.rooms[roomIndex];
+
+    const orderArray = Array(roomInfo.users.length)
+      .fill(0)
+      .map((x, i) => {
+        return x + i;
+      });
+
+    const order = shuffleArray(orderArray);
+
+    return order;
+  }
+
+  addLoadingEnd(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    this.games[gameIndex].loadingEndNumber += 1;
+  }
+
+  isAllLoadingEnd(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+    const userCount = this.rooms[roomIndex].users.length;
+
+    if (this.games[gameIndex].loadingEndNumber === userCount) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getGameInfo(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    return this.games[gameIndex];
   }
 }
 

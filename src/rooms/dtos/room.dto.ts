@@ -87,3 +87,8 @@ export class GetReadyDto {
   @IsNumber()
   userId: User['userId'];
 }
+
+export class LoadingEndDto {
+  @IsString()
+  roomId: Room['roomId'];
+}

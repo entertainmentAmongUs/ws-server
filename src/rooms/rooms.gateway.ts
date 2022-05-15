@@ -10,11 +10,9 @@ import {
 } from '@nestjs/websockets';
 import { AsyncApiService } from 'nestjs-asyncapi';
 import { Namespace, Server, Socket } from 'socket.io';
-import { 라이어게임_제시어 } from 'src/constant/subject';
 import { LoggingInterceptor } from 'src/core/interceptors/logging.interceptor';
 import { WSValidationPipe } from 'src/pipe/ws-validation-pipe';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
-import { shuffleArray } from 'src/utils/shuffleArray';
 import { ChatDto } from './dtos/chat.dto';
 import {
   CreateRoomDto,
@@ -22,6 +20,7 @@ import {
   GetReadyDto,
   JoinRoomDto,
   LeaveRoomDto,
+  LoadingEndDto,
   RoomInfoDto,
 } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
@@ -226,52 +225,14 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       roomInfo.users.length >= 3 &&
       roomInfo.users.every((user) => user.isReady)
     ) {
-      const userRandomNumber = Math.floor(
-        Math.random() * roomInfo.users.length
-      );
-      const userIdArray = roomInfo.users.map((user) => {
-        return user.userId;
-      });
+      this.roomsService.roomStatusToStart(roomInfo.roomId);
+      const gameInfo = this.roomsService.createGame(roomInfo.roomId);
 
-      const order = Array(roomInfo.users.length)
-        .fill(0)
-        .map((x, i) => {
-          return x + i;
-        });
-
-      const orderArray = shuffleArray(order);
-
-      const subjectRandomNumber = Math.floor(
-        Math.random() * 라이어게임_제시어[roomInfo.subject].length
-      );
-      this.roomsService.startRoom(roomInfo.roomId);
       this.server.to(roomInfo.roomId).emit('startGame', {
-        keyword: 라이어게임_제시어[roomInfo.subject][subjectRandomNumber],
-        order: orderArray,
-        liarNumber: userIdArray[userRandomNumber],
+        keyword: gameInfo.keyword,
+        order: gameInfo.order,
+        liarNumber: gameInfo.liar,
       });
-
-      const userCount = roomInfo.users.length;
-      let i = 0;
-
-      const userPerTime = 30;
-      let leaveTime = userPerTime;
-
-      let timerId = setInterval(() => {
-        i += 1;
-        leaveTime -= 1;
-        this.server
-          .to(roomInfo.roomId)
-          .emit('time', { order: orderArray[i % 30], time: leaveTime });
-
-        if (leaveTime === 0) {
-          leaveTime = userPerTime;
-        }
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(timerId);
-      }, 1000 * userPerTime * userCount);
     }
   }
 
@@ -352,6 +313,44 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       message: data.message,
       roomId: data.roomId,
     });
+  }
+
+  @UsePipes(new WSValidationPipe())
+  @SubscribeMessage('loadingEnd')
+  loadingEnd(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: LoadingEndDto
+  ) {
+    this.roomsService.addLoadingEnd(data.roomId);
+    const isAllLoadingEnd = this.roomsService.isAllLoadingEnd(data.roomId);
+
+    if (isAllLoadingEnd) {
+      const roomInfo = this.roomsService.findById(data.roomId);
+      const userCount = roomInfo.users.length;
+      const gameInfo = this.roomsService.getGameInfo(data.roomId);
+
+      let i = 0;
+
+      const userPerTime = 30;
+      let leaveTime = userPerTime;
+
+      let timerId = setInterval(() => {
+        i += 1;
+        leaveTime -= 1;
+        this.server.to(roomInfo.roomId).emit('time', {
+          order: gameInfo.order[Math.floor(i / 30)],
+          time: leaveTime,
+        });
+
+        if (leaveTime === 0) {
+          leaveTime = userPerTime;
+        }
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(timerId);
+      }, 1000 * userPerTime * userCount);
+    }
   }
 }
 
