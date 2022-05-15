@@ -331,27 +331,44 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       // TODO : 자유채팅시간 2분
       // TODO : 투표시간 30초
 
-      let i = 0;
+      let time = 0;
 
       const userPerTime = 30;
       let leaveTime = userPerTime;
+      let status = 'HINT';
 
       let timerId = setInterval(() => {
+        if (time > hintTime) {
+          status = 'VOTE';
+          leaveTime = hintTime;
+        } else if (time > hintTime + voteTime) {
+          status = 'FREE_CHAT';
+          leaveTime = voteTime;
+        }
+
         this.server.to(roomInfo.roomId).emit('time', {
-          order: gameInfo.order[Math.floor(i / userPerTime)],
+          order:
+            status === 'HINT'
+              ? gameInfo.order[Math.floor(time / userPerTime)]
+              : -1,
           time: leaveTime,
+          status,
         });
 
-        i += 1;
+        time += 1;
         leaveTime -= 1;
         if (leaveTime === 0) {
           leaveTime = userPerTime;
         }
       }, 1000);
 
+      const hintTime = 1000 * userPerTime * userCount;
+      const freeChatTime = 1000 * 60 * 2;
+      const voteTime = 1000 * 30;
+
       setTimeout(() => {
         clearInterval(timerId);
-      }, 1000 * userPerTime * userCount);
+      }, hintTime + freeChatTime + voteTime);
     }
   }
 }
