@@ -161,10 +161,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
 
     // 유저가 모두 레디해서 시작했을 때
-    if (
-      room.users.length >= 3 &&
-      room.users.every((user) => user.isReady === true)
-    ) {
+    if (room.status === 'PLAYING') {
       this.server.to(socket.id).emit('joinRoom', { status: 'ALREADY_STARTED' });
       return;
     }
