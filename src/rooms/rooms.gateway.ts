@@ -395,10 +395,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
     if (voteCount === this.roomsService.getUserCount(data.roomId)) {
       this.server
         .to(data.roomId)
-        .emit('voteResult', { status: 'GAME_END', result: gameInfo.vote });
+        .emit('voteResult', { status: 'VOTE_END', result: gameInfo.vote });
       return;
     }
   }
 }
+
+// TODO: 게임 끝나는 이벤트 받으면 게임 종료시키고 대기방 상태로 초기화 하기
 
 // TODO: 로비랑 룸 모듈 따로 나누기
