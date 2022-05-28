@@ -434,7 +434,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         if (timerId) {
           clearInterval(timerId);
         }
-      }, voteTime);
+      }, voteTime + oneSecond);
       return;
     }
 
