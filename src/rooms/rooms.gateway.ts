@@ -421,7 +421,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let leaveTime = 30;
 
       const timerId = setInterval(() => {
-        this.server.to(data.roomId).emit('time', {
+        this.server.to(data.roomId).emit('reVoteTime', {
           time: leaveTime,
         });
 
