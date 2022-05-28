@@ -347,6 +347,12 @@ export class RoomsService {
     return false;
   }
 
+  initializeVoteCount(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    this.games[gameIndex].vote = this.createVoteSystem(roomId);
+  }
+
   initializeRoom(roomId: Room['roomId']) {
     const roomIndex = this.findRoomIndex(roomId);
 

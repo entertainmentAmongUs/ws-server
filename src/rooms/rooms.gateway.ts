@@ -415,6 +415,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         status: 'RE_VOTE',
         result: gameInfo.vote,
       });
+      this.roomsService.initializeVoteCount(data.roomId);
 
       const oneSecond = 1000;
       let leaveTime = 30;
