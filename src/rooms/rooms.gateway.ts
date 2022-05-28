@@ -68,6 +68,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         this.roomsService.destroyGame(roomInfo.roomId);
         this.roomsService.initializeRoom(roomInfo.roomId);
         const updateRoomInfo = this.roomsService.findById(roomInfo.roomId);
+        this.server.to(roomInfo.roomId).emit('endGame');
         this.server
           .to(roomInfo.roomId)
           .emit(
@@ -392,7 +393,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const voteTime = oneSecond * 30;
 
       setTimeout(() => {
-        clearInterval(timerId);
+        if (timerId) {
+          clearInterval(timerId);
+        }
       }, hintTime + freeChatTime + voteTime + oneSecond * 3);
     }
   }
@@ -427,7 +430,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const voteTime = oneSecond * 30;
 
       setTimeout(() => {
-        clearInterval(timerId);
+        if (timerId) {
+          clearInterval(timerId);
+        }
       }, voteTime * oneSecond);
       return;
     }
