@@ -339,7 +339,9 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           order:
             status === 'HINT'
               ? gameInfo.order[Math.floor(time / (userPerTime + 1))]
-              : -1,
+              : status === 'FREE_CHAT'
+              ? -2
+              : -3,
           time: leaveTime,
           status,
         });
