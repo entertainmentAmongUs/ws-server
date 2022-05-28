@@ -24,6 +24,7 @@ import {
   RoomInfoDto,
   VoteDto,
 } from './dtos/room.dto';
+import { Timer } from './interfaces/timer.interface';
 import { RoomsService, 로비 } from './rooms.service';
 
 @AsyncApiService()
@@ -36,6 +37,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
   private logger: Logger = new Logger(RoomsGateway.name);
+  private readonly timer: Timer[] = [];
 
   constructor(private readonly roomsService: RoomsService) {}
 
@@ -361,7 +363,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let time = 0;
       let status = 'HINT';
 
-      let timerId = setInterval(() => {
+      const timerId = setInterval(() => {
         const isVoteEnd = this.roomsService.isVoteEnd(data.roomId);
         if (status === 'VOTE' && isVoteEnd) {
           clearInterval(timerId);
@@ -394,8 +396,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         }
       }, oneSecond);
 
-      const hintTime = oneSecond * (userPerTime + 1) * userCount;
-      const freeChatTime = oneSecond * 60 * 2;
+      // const hintTime = oneSecond * (userPerTime + 1) * userCount;
+      // const freeChatTime = oneSecond * 60 * 2;
+      const hintTime = oneSecond * (0 + 1) * userCount;
+      const freeChatTime = oneSecond * 1;
       const voteTime = oneSecond * 30;
 
       setTimeout(() => {
@@ -403,6 +407,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           clearInterval(timerId);
         }
       }, hintTime + freeChatTime + voteTime + oneSecond * 3);
+
+      this.timer.push({ roomId: data.roomId, timer: timerId });
     }
   }
 
@@ -433,7 +439,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           return;
         }
 
-        this.server.to(data.roomId).emit('time', {
+        this.server.to(data.roomId).emit('reVoteTime', {
           status: 'VOTE',
           order: -3,
           time: leaveTime,
@@ -456,6 +462,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       this.server
         .to(data.roomId)
         .emit('voteResult', { status: 'VOTE_END', result: gameInfo.vote });
+
+      clearInterval(this.timer.find((t) => t.roomId === data.roomId).timer);
 
       this.roomsService.initializeRoom(data.roomId);
       this.roomsService.destroyGame(data.roomId);
