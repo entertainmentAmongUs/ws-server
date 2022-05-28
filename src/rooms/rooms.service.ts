@@ -333,28 +333,36 @@ export class RoomsService {
   isMultipleMaxVoteCount(roomId: Room['roomId']) {
     const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
 
-    let maxVoteIndex = -1;
-    let maxVoteCount = 0;
-    let isMultipleMaxVoteCount = false;
+    const maxValue = Math.max(
+      ...this.games[gameIndex].vote.map((x) => x.count)
+    );
+    const maxVoteCount = this.games[gameIndex].vote.filter((x) => {
+      return x.count === maxValue;
+    }).length;
 
-    this.games[gameIndex].vote.forEach((vote, i) => {
-      if (vote.count > maxVoteCount) {
-        maxVoteIndex = i;
-        maxVoteCount = vote.count;
-      }
-
-      if (vote.count === maxVoteCount) {
-        if (maxVoteIndex !== -1 && maxVoteCount !== 0) {
-          isMultipleMaxVoteCount = true;
-        }
-      }
-    });
-
-    if (isMultipleMaxVoteCount) {
+    if (maxVoteCount > 1) {
       return true;
     }
 
     return false;
+  }
+
+  initializeRoom(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+
+    this.rooms[roomIndex].users = this.rooms[roomIndex].users.map((user) => {
+      return {
+        ...user,
+        isReady: false,
+      };
+    });
+    this.rooms[roomIndex].status = 'WAITING';
+  }
+
+  destroyGame(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    this.games.splice(gameIndex, 1);
   }
 }
 

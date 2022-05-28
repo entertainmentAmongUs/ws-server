@@ -13,7 +13,7 @@ import { Namespace, Server, Socket } from 'socket.io';
 import { LoggingInterceptor } from 'src/core/interceptors/logging.interceptor';
 import { WSValidationPipe } from 'src/pipe/ws-validation-pipe';
 import { KickDto, UserDto } from 'src/users/dto/user.dto';
-import { ChatDto } from './dtos/chat.dto';
+import { ChatDto, GameChatDto } from './dtos/chat.dto';
 import {
   CreateRoomDto,
   EditRoomDto,
@@ -64,8 +64,16 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
       this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
 
-      //TODO: 만약 게임중인 방에서 퇴장하면 게임을 폭파시킨다.
       if (roomInfo.status === 'PLAYING') {
+        this.roomsService.destroyGame(roomInfo.roomId);
+        this.roomsService.initializeRoom(roomInfo.roomId);
+        const updateRoomInfo = this.roomsService.findById(roomInfo.roomId);
+        this.server
+          .to(roomInfo.roomId)
+          .emit(
+            'roomInfo',
+            this.roomsService.transferRoomInfoData(updateRoomInfo)
+          );
       }
 
       if (roomInfo.users.length === 0) {
@@ -318,6 +326,22 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @UsePipes(new WSValidationPipe())
+  @SubscribeMessage('gameChat')
+  gameChat(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: GameChatDto
+  ) {
+    const user = this.roomsService.findUserBySocketId(socket.id);
+
+    this.server.to(data.roomId).emit('gameChat', {
+      status: data.status,
+      nickName: data.nickName,
+      message: data.message,
+      roomId: data.roomId,
+    });
+  }
+
+  @UsePipes(new WSValidationPipe())
   @SubscribeMessage('loadingEnd')
   loadingEnd(
     @ConnectedSocket() socket: Socket,
@@ -388,7 +412,23 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         status: 'RE_VOTE',
         result: gameInfo.vote,
       });
-      // TODO: 재투표시 타이머를 다시 돌려 시간 30초를 다시 준다.
+
+      const oneSecond = 1000;
+      let leaveTime = 30;
+
+      const timerId = setInterval(() => {
+        this.server.to(data.roomId).emit('time', {
+          time: leaveTime,
+        });
+
+        leaveTime -= 1;
+      }, oneSecond);
+
+      const voteTime = oneSecond * 30;
+
+      setTimeout(() => {
+        clearInterval(timerId);
+      }, voteTime * oneSecond);
       return;
     }
 
@@ -396,11 +436,18 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       this.server
         .to(data.roomId)
         .emit('voteResult', { status: 'VOTE_END', result: gameInfo.vote });
+
+      this.roomsService.initializeRoom(data.roomId);
+      this.roomsService.destroyGame(data.roomId);
+      this.server.to(data.roomId).emit('endGame');
+
+      const roomInfo = this.roomsService.findById(data.roomId);
+      this.server
+        .to(data.roomId)
+        .emit('roomInfo', this.roomsService.transferRoomInfoData(roomInfo));
       return;
     }
   }
 }
-
-// TODO: 게임 끝나는 이벤트 받으면 게임 종료시키고 대기방 상태로 초기화 하기
 
 // TODO: 로비랑 룸 모듈 따로 나누기
