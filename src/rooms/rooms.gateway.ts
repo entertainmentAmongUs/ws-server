@@ -453,7 +453,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           clearInterval(timerId);
         }
       }, voteTime + oneSecond * 2);
-      this.timer.push({ roomId: data.roomId, timer: timerId });
+      this.timer[this.timer.findIndex((t) => t.roomId === data.roomId)] = {
+        roomId: data.roomId,
+        timer: timerId,
+      };
       return;
     }
 
