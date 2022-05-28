@@ -92,3 +92,10 @@ export class LoadingEndDto {
   @IsString()
   roomId: Room['roomId'];
 }
+
+export class VoteDto {
+  @IsNumber()
+  targetUserId: User['userId'];
+  @IsString()
+  roomId: Room['roomId'];
+}

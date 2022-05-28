@@ -22,6 +22,7 @@ import {
   LeaveRoomDto,
   LoadingEndDto,
   RoomInfoDto,
+  VoteDto,
 } from './dtos/room.dto';
 import { RoomsService, 로비 } from './rooms.service';
 
@@ -62,6 +63,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
       const roomInfo = this.roomsService.findRoomInfoByRoomIndex(roomIndex);
       this.server.to(roomInfo.roomId).emit('userList', roomInfo.users);
+
+      //TODO: 만약 게임중인 방에서 퇴장하면 게임을 폭파시킨다.
+      if (roomInfo.status === 'PLAYING') {
+      }
 
       if (roomInfo.users.length === 0) {
         this.roomsService.deleteRoom(roomIndex);
@@ -365,6 +370,33 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       setTimeout(() => {
         clearInterval(timerId);
       }, hintTime + freeChatTime + voteTime + oneSecond * 3);
+    }
+  }
+
+  @UsePipes(new WSValidationPipe())
+  @SubscribeMessage('vote')
+  vote(@ConnectedSocket() socket: Socket, @MessageBody() data: VoteDto) {
+    const voteCount = this.roomsService.addVote(data.roomId, data.targetUserId);
+    const gameInfo = this.roomsService.getGameInfo(data.roomId);
+
+    const isMaxVoteCount = this.roomsService.isMultipleMaxVoteCount(
+      data.roomId
+    );
+
+    if (isMaxVoteCount) {
+      this.server.to(data.roomId).emit('voteResult', {
+        status: 'RE_VOTE',
+        result: gameInfo.vote,
+      });
+      // TODO: 재투표시 타이머를 다시 돌려 시간 30초를 다시 준다.
+      return;
+    }
+
+    if (voteCount === this.roomsService.getUserCount(data.roomId)) {
+      this.server
+        .to(data.roomId)
+        .emit('voteResult', { status: 'GAME_END', result: gameInfo.vote });
+      return;
     }
   }
 }

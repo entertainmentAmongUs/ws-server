@@ -129,6 +129,10 @@ export class RoomsService {
     return this.rooms[idx];
   }
 
+  getUserCount(roomId: Room['roomId']) {
+    return this.rooms.find((room) => room.roomId === roomId).users.length;
+  }
+
   findAll() {
     return this.rooms;
   }
@@ -221,6 +225,7 @@ export class RoomsService {
     const order = this.setOrder(roomId);
     const keyword = this.setKeyword(roomId);
     const liar = this.setLiar(roomId);
+    const vote = this.createVoteSystem(roomId);
 
     const game: Game = {
       roomId: room.roomId,
@@ -228,6 +233,7 @@ export class RoomsService {
       order,
       keyword,
       liar,
+      vote,
     };
 
     this.games.push(game);
@@ -272,6 +278,20 @@ export class RoomsService {
     return order;
   }
 
+  createVoteSystem(roomId: Room['roomId']) {
+    const roomIndex = this.findRoomIndex(roomId);
+    const roomInfo = this.rooms[roomIndex];
+
+    const voteArray = roomInfo.users.map((user) => {
+      return {
+        userId: user.userId,
+        count: 0,
+      };
+    });
+
+    return voteArray;
+  }
+
   addLoadingEnd(roomId: Room['roomId']) {
     const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
 
@@ -294,6 +314,47 @@ export class RoomsService {
     const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
 
     return this.games[gameIndex];
+  }
+
+  addVote(roomId: Room['roomId'], targetUserId: RoomInUser['userId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    this.games[gameIndex].vote[
+      this.games[gameIndex].vote.findIndex((x) => x.userId === targetUserId)
+    ].count += 1;
+
+    const voteCount = this.games[gameIndex].vote.reduce((prev, cur) => {
+      return prev + cur.count;
+    }, 0);
+
+    return voteCount;
+  }
+
+  isMultipleMaxVoteCount(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+
+    let maxVoteIndex = -1;
+    let maxVoteCount = 0;
+    let isMultipleMaxVoteCount = false;
+
+    this.games[gameIndex].vote.forEach((vote, i) => {
+      if (vote.count > maxVoteCount) {
+        maxVoteIndex = i;
+        maxVoteCount = vote.count;
+      }
+
+      if (vote.count === maxVoteCount) {
+        if (maxVoteIndex !== -1 && maxVoteCount !== 0) {
+          isMultipleMaxVoteCount = true;
+        }
+      }
+    });
+
+    if (isMultipleMaxVoteCount) {
+      return true;
+    }
+
+    return false;
   }
 }
 
