@@ -426,6 +426,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       voteCount === this.roomsService.getUserCount(data.roomId) &&
       isMaxVoteCount
     ) {
+      clearInterval(this.timer.find((t) => t.roomId === data.roomId).timer);
       this.server.to(data.roomId).emit('voteResult', {
         status: 'RE_VOTE',
         result: gameInfo.vote,
@@ -436,12 +437,6 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let leaveTime = 30;
 
       const timerId = setInterval(() => {
-        const isVoteEnd = this.roomsService.isVoteEnd(data.roomId);
-        if (isVoteEnd) {
-          clearInterval(timerId);
-          return;
-        }
-
         this.server.to(data.roomId).emit('reVoteTime', {
           status: 'VOTE',
           order: -3,
@@ -458,6 +453,7 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
           clearInterval(timerId);
         }
       }, voteTime + oneSecond * 2);
+      this.timer.push({ roomId: data.roomId, timer: timerId });
       return;
     }
 
