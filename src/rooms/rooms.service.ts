@@ -347,6 +347,20 @@ export class RoomsService {
     return false;
   }
 
+  isVoteEnd(roomId: Room['roomId']) {
+    const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
+    const voteCount = this.games[gameIndex].vote.reduce((prev, cur) => {
+      return prev + cur.count;
+    }, 0);
+    const getUserLength = this.rooms[this.findRoomIndex(roomId)].users.length;
+
+    if (voteCount === getUserLength) {
+      return true;
+    }
+
+    return false;
+  }
+
   initializeVoteCount(roomId: Room['roomId']) {
     const gameIndex = this.games.findIndex((x) => x.roomId === roomId);
 

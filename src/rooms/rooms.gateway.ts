@@ -362,6 +362,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let status = 'HINT';
 
       let timerId = setInterval(() => {
+        const isVoteEnd = this.roomsService.isVoteEnd(data.roomId);
+        if (status === 'VOTE' && isVoteEnd) {
+          clearInterval(timerId);
+          return;
+        }
+
         this.server.to(roomInfo.roomId).emit('time', {
           order:
             status === 'HINT'
@@ -421,6 +427,12 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       let leaveTime = 30;
 
       const timerId = setInterval(() => {
+        const isVoteEnd = this.roomsService.isVoteEnd(data.roomId);
+        if (isVoteEnd) {
+          clearInterval(timerId);
+          return;
+        }
+
         this.server.to(data.roomId).emit('time', {
           status: 'VOTE',
           order: -3,
