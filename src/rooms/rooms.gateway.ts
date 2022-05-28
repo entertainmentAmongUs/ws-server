@@ -422,7 +422,10 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
       data.roomId
     );
 
-    if (isMaxVoteCount) {
+    if (
+      voteCount === this.roomsService.getUserCount(data.roomId) &&
+      isMaxVoteCount
+    ) {
       this.server.to(data.roomId).emit('voteResult', {
         status: 'RE_VOTE',
         result: gameInfo.vote,
