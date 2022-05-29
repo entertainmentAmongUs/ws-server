@@ -396,10 +396,8 @@ export class RoomsGateway implements OnGatewayInit, OnGatewayDisconnect {
         }
       }, oneSecond);
 
-      // const hintTime = oneSecond * (userPerTime + 1) * userCount;
-      // const freeChatTime = oneSecond * 60 * 2;
-      const hintTime = oneSecond * (0 + 1) * userCount;
-      const freeChatTime = oneSecond * 1;
+      const hintTime = oneSecond * (userPerTime + 1) * userCount;
+      const freeChatTime = oneSecond * 60 * 2;
       const voteTime = oneSecond * 30;
 
       setTimeout(() => {
